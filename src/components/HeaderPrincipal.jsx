@@ -1,8 +1,13 @@
+// src/components/HeaderPrincipal.jsx
 import React from 'react';
 import { Sun, Moon } from 'lucide-react'; // Ícones elegantes (de lucide-react)
 import logoBandeiras from '/src/assets/logo.png';
+import { useDarkMode } from '../hooks/useDarkMode'; // 1. Importar o hook
 
 function HeaderPrincipal() {
+  // 2. Usar o hook. Não precisamos do 'theme' aqui, apenas da função de toggle.
+  const [, toggleTheme] = useDarkMode(); 
+
   return (
     <header className="bg-white dark:bg-gray-900 shadow-md transition-colors duration-300">
       {/* Navbar principal */}
@@ -43,11 +48,16 @@ function HeaderPrincipal() {
             </a>
           </nav>
 
-          {/* Botão de modo escuro (decorativo) */}
+          {/* Botão de modo escuro (funcional) */}
           <button
+            onClick={toggleTheme} // 3. Adicionar o onClick
             className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
             title="Alternar modo escuro"
           >
+            {/* Os ícones trocarão automaticamente!
+              O Tailwind vai esconder o Sol (Sun) quando a classe 'dark' estiver no <html>
+              e mostrar a Lua (Moon) no lugar.
+            */}
             <Sun className="w-5 h-5 text-gray-700 dark:hidden" />
             <Moon className="w-5 h-5 text-gray-300 hidden dark:block" />
           </button>
