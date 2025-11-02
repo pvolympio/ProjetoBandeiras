@@ -4,32 +4,12 @@ import countries from '../data/countries';
 function FuncaoBandeiras() {
   const [searchTerm, setSearchTerm] = useState('');
 
-  // --- 1) SNAPSHOT IMUTÁVEL do countries para evitar mutações externas ---
-  // pegamos uma cópia ao montar o componente e usamos sempre essa cópia
+  // --- 1) Snapshot imutável ---
   const baseCountries = useMemo(() => {
-    // Garantimos que cada item tem code e name
     return Array.isArray(countries) ? countries.map(c => ({ ...c })) : [];
   }, []);
 
-  // --- 2) Importa dinamicamente bandeiras (uma vez) e cria um mapa {code: url} ---
-  const flagMap = useMemo(() => {
-    const flags = import.meta.glob('../assets/flags/*.svg', {
-      eager: true,
-      query: '?url',
-      import: 'default',
-    });
-
-    const map = {};
-    for (const path in flags) {
-      const file = path.split('/').pop(); // ex: 'nl.svg'
-      if (!file) continue;
-      const code = file.replace('.svg', '').toLowerCase();
-      map[code] = flags[path];
-    }
-    return map;
-  }, []); // roda apenas uma vez
-
-  // --- 3) Filtragem em useMemo para estabilidade ---
+  // --- 2) Filtragem + remoção de duplicatas ---
   const filteredAndUnique = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
 
@@ -43,7 +23,7 @@ function FuncaoBandeiras() {
             );
           });
 
-    // --- 4) ELIMINA DUPLICATAS por código (mantendo a primeira ocorrência) ---
+    // Elimina duplicatas por código
     const uniqueByCode = [];
     const seen = new Set();
     for (const c of filtered) {
@@ -51,27 +31,11 @@ function FuncaoBandeiras() {
       if (!seen.has(key)) {
         seen.add(key);
         uniqueByCode.push(c);
-      } else {
-        // opcional: log para depuração
-        // console.warn('duplicated country filtered out:', c);
       }
     }
 
     return uniqueByCode;
   }, [searchTerm, baseCountries]);
-
-  // --- DEBUG: detectar se baseCountries já contêm duplicatas ao montar ---
-  // (descomente se quiser inspecionar)
-  // useEffect(() => {
-  //   const dups = baseCountries.reduce((acc, cur) => {
-  //     const k = (cur.code || '').toLowerCase();
-  //     acc[k] = (acc[k] || 0) + 1;
-  //     return acc;
-  //   }, {});
-  //   Object.entries(dups).forEach(([k, v]) => {
-  //     if (v > 1) console.warn(`Duplicated in source countries: ${k} appears ${v} times`);
-  //   });
-  // }, [baseCountries]);
 
   return (
     <div className="p-6 bg-white dark:bg-gray-900 min-h-screen transition-colors duration-300">
@@ -104,10 +68,11 @@ function FuncaoBandeiras() {
         {filteredAndUnique.length > 0 ? (
           filteredAndUnique.map(({ code, name }) => {
             const lower = (code || '').toLowerCase();
-            const src = flagMap[lower] || ''; // evita undefined
+            const src = `/flags/${lower}.svg`; // ✅ corrigido (sem crase solta)
+
             return (
               <div
-                key={lower || name} // chave única e estável
+                key={lower || name}
                 className="
                   border-2 border-amber-500 rounded-lg p-4 text-center
                   transition-all duration-200 ease-in-out
