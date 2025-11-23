@@ -1,699 +1,660 @@
-import React, { useEffect, useRef, useState } from "react";
-import countries from "../../data/countries";
+"use client"
 
-const CANVAS_W = 1080;
-const CANVAS_H = 1920;
-const TOTAL_ROUNDS = 5;
-const QUIZ_DURATION = 8;
 
-// Calcular duração total aproximada do vídeo
-const ROUND_TIME = QUIZ_DURATION + 3; // 8s quiz + 3s revelação
-const TOTAL_VIDEO_TIME = (ROUND_TIME * TOTAL_ROUNDS); // ~55 segundos
+import { useEffect, useRef, useState } from "react"
+import countries from "../../data/countries"
+
+
+// --- CONFIGURAÇÕES GERAIS ---
+const CANVAS_W = 1080
+const CANVAS_H = 1920
+const TOTAL_ROUNDS = 5
+const QUIZ_DURATION = 8
+
+
+// Coloque seu @ aqui para aparecer no rodapé (Opcional)
+const MY_USER = "@MisterCreative02"
+
 
 const SOUNDS = {
   correct: "/audio/sounds/correct.mp3",
   tick: "/audio/sounds/tick.mp3",
   background: "/audio/sounds/background-music.mp3",
   transition: "/audio/sounds/transition.mp3",
-};
+}
+
+
+// --- BANCO DE DADOS E LÓGICA (Mantido do seu código) ---
+const EASY_COUNTRIES = ["br", "us", "ar", "pt", "es", "fr", "de", "it", "jp", "cn", "ru", "gb", "ca", "au", "mx", "in", "kr"]
+const MEDIUM_COUNTRIES = ["za", "eg", "tr", "gr", "se", "no", "fi", "dk", "nl", "be", "ch", "at", "co", "cl", "pe", "uy", "ua", "pl", "ie", "sa", "ae", "th", "id", "nz", "jm", "cu"]
+
+
+const AMERICAS_CODES = ["br", "us", "ar", "ca", "mx", "cl", "co", "pe", "uy", "ve", "bo", "py", "ec", "cu", "jm", "ht", "do", "cr", "pa", "sv", "gt", "hn", "ni", "bs", "bb", "tt"]
+const EUROPE_CODES = ["pt", "es", "fr", "de", "it", "gb", "ru", "ua", "pl", "nl", "be", "ch", "at", "gr", "tr", "se", "no", "fi", "dk", "ie", "cz", "hu", "ro", "bg", "hr", "rs", "ba", "al", "xk", "is"]
+const ASIA_CODES = ["jp", "cn", "kr", "in", "id", "th", "vn", "ph", "my", "sg", "pk", "bd", "sa", "ae", "qa", "kw", "bh", "om", "lb", "il", "jo", "sy", "iq", "ir", "kz", "uz", "mn"]
+const AFRICA_CODES = ["za", "eg", "ng", "gh", "ke", "tz", "ma", "dz", "tn", "sn", "ci", "cm", "ao", "mz", "et", "ug", "zw", "na", "mg", "td", "so", "ly"]
+
+
+const CONFUSING_FLAGS = {
+  "td": ["ro", "md", "ad"], "ro": ["td", "md", "be"], "id": ["mc", "pl", "sg"],
+  "mc": ["id", "pl", "at"], "pl": ["id", "mc", "bh"], "au": ["nz", "gb", "fj"],
+  "nz": ["au", "gb", "ms"], "ie": ["ci", "it", "in"], "ci": ["ie", "it", "gn"],
+  "ml": ["gn", "gh", "sn"], "gn": ["ml", "gh", "bo"], "ve": ["ec", "co", "am"],
+  "ec": ["ve", "co", "gh"], "co": ["ec", "ve", "am"], "mx": ["it", "hu", "ir"],
+  "it": ["mx", "hu", "ie"], "nl": ["lu", "fr", "py"], "lu": ["nl", "fr", "hr"],
+  "ru": ["si", "sk", "fr"], "us": ["lr", "my", "cu"], "lr": ["us", "my", "tg"],
+  "cu": ["pr", "ph", "cz"], "cl": ["cz", "tx", "pl"], "jp": ["bd", "pw", "gl"],
+  "bd": ["jp", "pw", "sa"]
+}
+
+
+const THEMES = [
+  { id: 'mix', label: '🔥 Viral Mix', color: 'from-purple-600 to-pink-600', title: 'VOCÊ É UM GÊNIO?' },
+  { id: 'americas', label: '🌎 Américas', color: 'from-blue-500 to-green-500', title: 'CONHECE SEU CONTINENTE?' },
+  { id: 'europe', label: '🇪🇺 Europa', color: 'from-blue-700 to-indigo-500', title: 'NÍVEL: VIAJANTE ✈️' },
+  { id: 'asia', label: '⛩️ Ásia', color: 'from-red-500 to-yellow-500', title: 'MODO ASIÁTICO 🧠' },
+  { id: 'africa', label: '🌍 África', color: 'from-green-600 to-yellow-600', title: 'NINGUÉM ACERTA A 3ª' },
+  { id: 'hard', label: '💀 Insano', color: 'from-red-700 to-black', title: 'SÓ PARA ESPECIALISTAS' },
+]
+
+
+// --- SISTEMA DE PARTÍCULAS (NOVO) ---
+const PARTICLES_COUNT = 60
+const particlesInit = Array.from({ length: PARTICLES_COUNT }).map(() => ({
+  x: Math.random() * CANVAS_W,
+  y: Math.random() * CANVAS_H,
+  vx: (Math.random() - 0.5) * 1.5,
+  vy: (Math.random() - 0.5) * 1.5,
+  size: Math.random() * 3 + 1,
+  alpha: Math.random()
+}))
+
 
 export default function QuizTikTok() {
-  const canvasRef = useRef(null);
-  const rafRef = useRef(null);
-  const lastTimeRef = useRef(0);
-  const frameInterval = 1000 / 45;
+  const canvasRef = useRef(null)
+  const rafRef = useRef(null)
+  const lastTimeRef = useRef(0)
+  const frameInterval = 1000 / 30
 
-  const mediaRecorderRef = useRef(null);
-  const recordedChunksRef = useRef([]);
-  const isRecordingRef = useRef(false);
-  const recordingTimeoutRef = useRef(null);
-  const recordingIntervalRef = useRef(null);
-  const recordingStartTimeRef = useRef(0);
-  const videoSegmentsRef = useRef([]);
 
-  const audioCtxRef = useRef(null);
-  const destinationRef = useRef(null);
+  // Novo: Ref para Partículas
+  const particlesRef = useRef(particlesInit)
 
-  const bgm = useRef(null);
-  const tick = useRef(null);
-  const voice = useRef(null);
 
-  const [stage, setStage] = useState("idle");
-  const [round, setRound] = useState(1);
-  const [timer, setTimer] = useState(QUIZ_DURATION);
-  const [isRevealing, setIsRevealing] = useState(false);
-  const [currentCountry, setCurrentCountry] = useState(null);
-  const [flagImage, setFlagImage] = useState(null);
-  const [options, setOptions] = useState([]);
-  const [status, setStatus] = useState("");
-  const [recordingTime, setRecordingTime] = useState(0);
+  // Refs de Mídia
+  const mediaRecorderRef = useRef(null)
+  const recordedChunksRef = useRef([])
+  const isRecordingRef = useRef(false)
+  const bgVideoRef = useRef(null)
+ 
+  // Refs Lógicos
+  const usedCountriesRef = useRef(new Set())
+  const audioCtxRef = useRef(null)
+  const destinationRef = useRef(null)
+  const bgm = useRef(null)
+  const tick = useRef(null)
 
-  const allCountries = countries;
 
-  // ---------------------
-  // Audio system
-  // ---------------------
+  // Estados
+  const [stage, setStage] = useState("idle")
+  const [selectedTheme, setSelectedTheme] = useState(THEMES[0])
+  const [round, setRound] = useState(1)
+  const [timer, setTimer] = useState(QUIZ_DURATION)
+  const [isRevealing, setIsRevealing] = useState(false)
+  const [scoreBoard, setScoreBoard] = useState([])
+ 
+  const [currentCountry, setCurrentCountry] = useState(null)
+  const [flagImage, setFlagImage] = useState(null)
+  const [options, setOptions] = useState([])
+  const [status, setStatus] = useState("")
+
+
+  // --- INICIALIZAÇÃO DO VÍDEO DE FUNDO ---
+  useEffect(() => {
+    // Tenta carregar se existir na pasta public
+    if (typeof document !== 'undefined') {
+        const vid = document.createElement("video")
+        vid.src = "/background.mp4"
+        vid.loop = true; vid.muted = true; vid.playsInline = true;
+        vid.load()
+        bgVideoRef.current = vid
+    }
+  }, [])
+ 
+  // --- HELPERS LÓGICOS (Mantidos) ---
+  const getDifficultyByRound = (r) => {
+    if (r <= 2) return "easy"
+    if (r === 3) return "medium"
+    return "hard"
+  }
+
+
+  const getRegionCodes = (code) => {
+    if (AMERICAS_CODES.includes(code)) return AMERICAS_CODES
+    if (EUROPE_CODES.includes(code)) return EUROPE_CODES
+    if (ASIA_CODES.includes(code)) return ASIA_CODES
+    if (AFRICA_CODES.includes(code)) return AFRICA_CODES
+    return []
+  }
+
+
+  // --- ÁUDIO SYSTEM (Mantido) ---
   const initAudioSystem = async () => {
     if (!audioCtxRef.current) {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const dest = audioCtx.createMediaStreamDestination();
-      audioCtxRef.current = audioCtx;
-      destinationRef.current = dest;
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+      const dest = audioCtx.createMediaStreamDestination()
+      audioCtxRef.current = audioCtx
+      destinationRef.current = dest
     }
-    
     if (audioCtxRef.current.state === "suspended") {
-      await audioCtxRef.current.resume();
+      await audioCtxRef.current.resume()
     }
-    
-    return audioCtxRef.current;
-  };
+    return audioCtxRef.current
+  }
+
 
   const playSound = async (url, volume = 1, loop = false) => {
     try {
-      const audioCtx = audioCtxRef.current;
-      if (!audioCtx) return null;
+      const audioCtx = audioCtxRef.current
+      if (!audioCtx) return null
+      const res = await fetch(url)
+      if (!res.ok) return null
+      const buf = await res.arrayBuffer()
+      const audioBuffer = await audioCtx.decodeAudioData(buf)
+      const src = audioCtx.createBufferSource()
+      const gain = audioCtx.createGain()
+      src.buffer = audioBuffer
+      src.loop = loop
+      gain.gain.value = volume
+      src.connect(gain)
+      gain.connect(destinationRef.current)
+      gain.connect(audioCtx.destination)
+      src.start(0)
+      return src
+    } catch (err) { return null }
+  }
 
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`Falha ao carregar: ${url}`);
-      
-      const buf = await res.arrayBuffer();
-      const audioBuffer = await audioCtx.decodeAudioData(buf);
-      
-      const src = audioCtx.createBufferSource();
-      const gain = audioCtx.createGain();
-      
-      src.buffer = audioBuffer;
-      src.loop = loop;
-      gain.gain.value = volume;
-      
-      src.connect(gain);
-      gain.connect(destinationRef.current);
-      gain.connect(audioCtx.destination);
-      
-      src.start(0);
-      return src;
-    } catch (err) {
-      console.warn("Erro ao tocar:", url, err.message);
-      return null;
-    }
-  };
 
   const stopSound = (ref) => {
     if (ref?.current) {
-      try {
-        ref.current.onended = null;
-        ref.current.stop();
-      } catch {}
-      ref.current = null;
+      try { ref.current.stop() } catch {}
+      ref.current = null
     }
-  };
+  }
 
-  const playBackground = async () => {
-    stopSound(bgm);
-    bgm.current = await playSound(SOUNDS.background, 0.2, true);
-  };
 
-  const playTick = async () => {
-    stopSound(tick);
-    tick.current = await playSound(SOUNDS.tick, 0.4);
-  };
-
-  const playCountryAudio = async (code) => {
-    stopSound(voice);
-    voice.current = await playSound(`/audio/countries/${code}.mp3`, 0.9);
-    
-    if (voice.current) {
-      voice.current.onended = async () => {
-        await playSound(SOUNDS.correct, 0.7);
-      };
-    } else {
-      await playSound(SOUNDS.correct, 0.7);
+  // --- SELEÇÃO DE PAÍSES (Mantido) ---
+  function pickRandomCountry() {
+    let pool = []
+    switch (selectedTheme.id) {
+      case 'mix':
+        const difficulty = getDifficultyByRound(round)
+        if (difficulty === "easy") pool = countries.filter(c => EASY_COUNTRIES.includes(c.code))
+        else if (difficulty === "medium") pool = countries.filter(c => MEDIUM_COUNTRIES.includes(c.code))
+        else pool = countries.filter(c => !EASY_COUNTRIES.includes(c.code) && !MEDIUM_COUNTRIES.includes(c.code))
+        break;
+      case 'americas': pool = countries.filter(c => AMERICAS_CODES.includes(c.code)); break;
+      case 'europe': pool = countries.filter(c => EUROPE_CODES.includes(c.code)); break;
+      case 'asia': pool = countries.filter(c => ASIA_CODES.includes(c.code)); break;
+      case 'africa': pool = countries.filter(c => AFRICA_CODES.includes(c.code)); break;
+      case 'hard': pool = countries.filter(c => !EASY_COUNTRIES.includes(c.code) && !MEDIUM_COUNTRIES.includes(c.code)); break;
+      default: pool = countries;
     }
-  };
-
-  const playTransition = async () => {
-    await playSound(SOUNDS.transition, 0.6);
-  };
-
-  const stopAllAudio = () => {
-    stopSound(bgm);
-    stopSound(tick);
-    stopSound(voice);
-  };
-
-  // ---------------------
-  // Recording System - SOLUÇÃO RADICAL
-  // ---------------------
-  const startRecording = async () => {
-    try {
-      const canvas = canvasRef.current;
-      if (!canvas) throw new Error("Canvas não encontrado");
-
-      await initAudioSystem();
-
-      const canvasStream = canvas.captureStream(30);
-      const audioStream = destinationRef.current.stream;
-
-      const mixedStream = new MediaStream([
-        ...canvasStream.getVideoTracks(),
-        ...audioStream.getAudioTracks(),
-      ]);
-
-      // FORÇA CODECS ESPECÍFICOS para melhor compatibilidade
-      const options = { 
-        mimeType: "video/webm;codecs=vp8,opus",
-        videoBitsPerSecond: 2500000,
-        audioBitsPerSecond: 128000
-      };
-
-      // Testa compatibilidade
-      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        options.mimeType = "video/webm";
-        console.warn("VP8 não suportado, usando WebM básico");
-      }
-
-      console.log("Iniciando gravação com:", options.mimeType);
-
-      recordedChunksRef.current = [];
-      videoSegmentsRef.current = [];
-      const recorder = new MediaRecorder(mixedStream, options);
-
-      // COLETA DADOS FREQUENTEMENTE para metadados precisos
-      recorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          recordedChunksRef.current.push(e.data);
-          console.log("Chunk recebido:", e.data.size, "bytes");
-        }
-      };
-
-      recorder.onstop = () => {
-        console.log("MediaRecorder parado, chunks:", recordedChunksRef.current.length);
-        processFinalVideo();
-      };
-
-      // INICIA com timeslice CURTO para metadados precisos
-      recorder.start(500); // Coleta a cada 500ms para metadados precisos
-      mediaRecorderRef.current = recorder;
-      isRecordingRef.current = true;
-      recordingStartTimeRef.current = Date.now();
-      setRecordingTime(0);
-      
-      // Timer para mostrar tempo de gravação
-      recordingIntervalRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - recordingStartTimeRef.current) / 1000);
-        setRecordingTime(elapsed);
-      }, 1000);
-      
-      // TEMPO LIMITE ABSOLUTO - não pode passar de 60s
-      recordingTimeoutRef.current = setTimeout(() => {
-        console.log("⏰ TEMPO LIMITE: Forçando parada após 60s");
-        forceStopRecording();
-      }, 60000); // Máximo absoluto de 60 segundos
-      
-     
-      await playBackground();
-
-    } catch (err) {
-      console.error("Erro ao iniciar gravação:", err);
-      setStatus("❌ Erro ao iniciar gravação");
+    let available = pool.filter(c => !usedCountriesRef.current.has(c.code))
+    if (available.length === 0) {
+        if (pool.length > 0) available = pool
+        else available = countries.filter(c => !usedCountriesRef.current.has(c.code))
     }
-  };
+    const selected = available[Math.floor(Math.random() * available.length)] || countries[0]
+    usedCountriesRef.current.add(selected.code)
+    return selected
+  }
 
-  const clearRecordingTimers = () => {
-    if (recordingTimeoutRef.current) {
-      clearTimeout(recordingTimeoutRef.current);
-      recordingTimeoutRef.current = null;
-    }
-    if (recordingIntervalRef.current) {
-      clearInterval(recordingIntervalRef.current);
-      recordingIntervalRef.current = null;
-    }
-  };
 
-  const forceStopRecording = () => {
-    if (isRecordingRef.current && mediaRecorderRef.current) {
-      console.log("🛑 FORÇANDO PARADA DA GRAVAÇÃO");
-      
-      // Para o MediaRecorder PRIMEIRO
-      if (mediaRecorderRef.current.state === "recording") {
-        console.log("Parando MediaRecorder...");
-        mediaRecorderRef.current.stop();
-      }
-      
-      // DEPOIS para as tracks
-      if (mediaRecorderRef.current.stream) {
-        console.log("Parando tracks...");
-        mediaRecorderRef.current.stream.getTracks().forEach(track => {
-          track.stop();
-          console.log("Track parada:", track.kind);
-        });
-      }
-      
-      isRecordingRef.current = false;
-      stopAllAudio();
-      clearRecordingTimers();
-      
-      setStatus("⏳ Finalizando gravação...");
-    }
-  };
-
-  const stopRecording = () => {
-    console.log("🛑 Parada normal da gravação");
-    forceStopRecording();
-  };
-
-  // ---------------------
-  // Processamento final do vídeo
-  // ---------------------
-  const processFinalVideo = () => {
-    try {
-      setStatus("🎬 Processando vídeo final...");
-      
-      const chunks = recordedChunksRef.current;
-      if (!chunks || chunks.length === 0) {
-        throw new Error("Nenhum dado foi gravado");
-      }
-
-      console.log("Processando", chunks.length, "chunks de vídeo");
-
-      // Cria o blob FINAL
-      const finalBlob = new Blob(chunks, { 
-        type: "video/webm" 
-      });
-
-      console.log("Vídeo final criado:", {
-        tamanho: finalBlob.size + " bytes",
-        duraçãoGravada: recordingTime + " segundos",
-        chunks: chunks.length
-      });
-
-      if (finalBlob.size === 0) {
-        throw new Error("Vídeo final vazio");
-      }
-
-      // Força download IMEDIATO
-      downloadVideo(finalBlob);
-
-    } catch (err) {
-      console.error("Erro no processamento:", err);
-      setStatus("❌ Erro ao processar vídeo");
-      // Tenta baixar mesmo assim
-      try {
-        const chunks = recordedChunksRef.current;
-        if (chunks && chunks.length > 0) {
-          const blob = new Blob(chunks, { type: "video/webm" });
-          downloadVideo(blob);
-        }
-      } catch (fallbackErr) {
-        console.error("Falha total:", fallbackErr);
-      }
-    }
-  };
-
-  // ---------------------
-  // Download do vídeo
-  // ---------------------
-  const downloadVideo = (blob) => {
-    try {
-      setStatus("📦 Preparando download...");
-      
-      // Cria URL e força download
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `quiz-tiktok-${recordingTime}s-${Date.now()}.webm`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      console.log("✅ Download iniciado para vídeo de", recordingTime + "s");
-
-      // Limpeza e reset
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-        setStatus(`✅ Vídeo de ${recordingTime}s baixado!`);
-        
-        // Reset para estado inicial
-        setTimeout(() => {
-          setStage("idle");
-          setRound(1);
-          setRecordingTime(0);
-          setStatus("");
-        }, 3000);
-      }, 1000);
-
-    } catch (err) {
-      console.error("Erro no download:", err);
-      setStatus("❌ Erro ao baixar vídeo");
-      
-      // Reset mesmo em caso de erro
-      setTimeout(() => {
-        setStage("idle");
-        setRound(1);
-        setRecordingTime(0);
-      }, 3000);
-    }
-  };
-
-  // ---------------------
-  // Quiz logic
-  // ---------------------
   async function loadFlag(code) {
     return new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = `/flags/${code}.svg`;
-      img.onload = () => resolve(img);
-      img.onerror = () => {
-        console.warn(`Bandeira ${code} não carregada`);
-        resolve(null);
-      };
-    });
+      const img = new Image()
+      img.crossOrigin = "anonymous"
+      img.src = `/flags/${code}.svg`
+      img.onload = () => resolve(img)
+      img.onerror = () => resolve(null)
+    })
   }
 
-  function pickRandomCountry() {
-    return allCountries[Math.floor(Math.random() * allCountries.length)];
-  }
 
-  function generateOptions(correct) {
-    const opts = [correct];
-    while (opts.length < 4) {
-      const c = pickRandomCountry();
-      if (!opts.find((o) => o.code === c.code)) opts.push(c);
-    }
-    return opts.sort(() => Math.random() - 0.5);
-  }
-
+  // --- CONTROLE DE FLUXO (Mantido) ---
   const startQuiz = async () => {
-    try {
-      setStage("running");
-      setRound(1);
-      setTimer(QUIZ_DURATION);
-     
-      
-      // Limpa estado anterior COMPLETAMENTE
-      recordedChunksRef.current = [];
-      videoSegmentsRef.current = [];
-      isRecordingRef.current = false;
-      mediaRecorderRef.current = null;
-      setRecordingTime(0);
-      clearRecordingTimers();
-      
-      // Delay para garantir que canvas está pronto
-      setTimeout(() => {
-        startRecording();
-      }, 800);
+    usedCountriesRef.current.clear()
+    setScoreBoard([])
+    setStage("running")
+    setRound(1)
+   
+    await initAudioSystem()
+    stopSound(bgm)
+    bgm.current = await playSound(SOUNDS.background, 0.2, true)
+   
+    if(bgVideoRef.current) bgVideoRef.current.play().catch(() => {})
+   
+    setTimeout(() => startRecording(), 600)
+    startRound()
+  }
 
-      startRound();
-    } catch (err) {
-      console.error("Erro ao iniciar quiz:", err);
-      setStatus("❌ Erro ao iniciar");
-    }
-  };
 
   const startRound = async () => {
-    const c = pickRandomCountry();
-    const img = await loadFlag(c.code);
-    setCurrentCountry(c);
-    setFlagImage(img);
-    setOptions(generateOptions(c));
-    setTimer(QUIZ_DURATION);
-    setIsRevealing(false);
-  };
+    const c = pickRandomCountry()
+    const img = await loadFlag(c.code)
+   
+    let distractors = []
+    // Lógica de distratores mantida
+    if (CONFUSING_FLAGS[c.code]) {
+       const confusingCodes = CONFUSING_FLAGS[c.code]
+       distractors = countries.filter(country => confusingCodes.includes(country.code))
+    }
+    if (distractors.length < 3) {
+        const regionCodes = getRegionCodes(c.code)
+        const regionalCandidates = countries.filter(country =>
+            regionCodes.includes(country.code) && country.code !== c.code &&
+            !distractors.find(d => d.code === country.code)
+        )
+        const randomRegional = regionalCandidates.sort(() => Math.random() - 0.5)
+        distractors = [...distractors, ...randomRegional].slice(0, 3 - distractors.length + distractors.length)
+    }
+    while (distractors.length < 3) {
+        const random = countries[Math.floor(Math.random() * countries.length)]
+        if (random.code !== c.code && !distractors.find(d => d.code === random.code)) {
+            distractors.push(random)
+        }
+    }
+   
+    const finalDistractors = distractors.slice(0, 3)
+    const finalOptions = [c, ...finalDistractors].sort(() => Math.random() - 0.5)
+   
+    setCurrentCountry(c)
+    setFlagImage(img)
+    setOptions(finalOptions)
+    setTimer(QUIZ_DURATION)
+    setIsRevealing(false)
+  }
 
+
+  // Timer Effect
   useEffect(() => {
-    if (stage !== "running" || isRevealing) return;
-
+    if (stage !== "running" || isRevealing) return
     if (timer > 0 && timer <= 3) {
-      playTick();
+      stopSound(tick)
+      playSound(SOUNDS.tick, 0.5)
     }
-
     if (timer <= 0) {
-      revealFlag();
-      return;
+      revealFlag()
+      return
     }
+    const id = setTimeout(() => setTimer(t => t - 1), 1000)
+    return () => clearTimeout(id)
+  }, [timer, isRevealing, stage])
 
-    const id = setTimeout(() => setTimer((t) => t - 1), 1000);
-    return () => clearTimeout(id);
-  }, [stage, timer, isRevealing]);
 
   const revealFlag = () => {
-    setIsRevealing(true);
-    stopSound(tick);
+    setIsRevealing(true)
+    playSound(SOUNDS.correct, 0.7)
+   
+    const newScore = [...scoreBoard, 'played']
+    setScoreBoard(newScore)
 
-    if (currentCountry) {
-      playCountryAudio(currentCountry.code);
-    }
 
     setTimeout(async () => {
       if (round >= TOTAL_ROUNDS) {
-        console.log("🎯 Última rodada concluída - parando gravação");
-        stopRecording();
+        stopRecording()
       } else {
-        await playTransition();
-        setRound((r) => r + 1);
-        startRound();
+        playSound(SOUNDS.transition, 0.4)
+        setRound(r => r + 1)
+        startRound()
       }
-    }, 3000);
-  };
+    }, 2500)
+  }
 
-  // ---------------------
-  // Canvas draw
-  // ---------------------
-  const drawScene = (ctx) => {
-    const w = CANVAS_W;
-    const h = CANVAS_H;
-    const time = Date.now() * 0.001;
 
-    // Fundo animado
-    const grad = ctx.createLinearGradient(0, 0, 0, h);
-    const hueShift = Math.sin(time * 0.1) * 10;
-    grad.addColorStop(0, `hsl(${280 + hueShift}, 100%, 8%)`);
-    grad.addColorStop(1, `hsl(${300 + hueShift}, 100%, 4%)`);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
-
-    // Header
-    ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "center";
-    ctx.font = "bold 72px 'Poppins', sans-serif";
-    ctx.fillText("QUAL É ESSA BANDEIRA?", w / 2, 120);
-
-    ctx.font = "600 36px 'Poppins', sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.fillText(`Rodada ${round}/${TOTAL_ROUNDS}`, w / 2, 180);
-
-    // Container da bandeira
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 3;
-    if (ctx.roundRect) {
-      ctx.roundRect(80, 220, w - 160, 550, 20);
-    } else {
-      ctx.rect(80, 220, w - 160, 550);
-    }
-    ctx.fill();
-    ctx.stroke();
-
-    // Bandeira
-    if (flagImage) {
-      const img = flagImage;
-      const maxWidth = w - 240;
-      const maxHeight = 450;
-      const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-      const dw = img.width * scale;
-      const dh = img.height * scale;
-      const dx = (w - dw) / 2;
-      const dy = 220 + (550 - dh) / 2;
-      
-      ctx.drawImage(img, dx, dy, dw, dh);
-    }
-
-    // Timer
-    ctx.font = "bold 52px 'Poppins', sans-serif";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(`${timer}s`, w / 2, 820);
-
-    // Barra de progresso do timer
-    const progress = timer / QUIZ_DURATION;
-    ctx.fillStyle = "rgba(255,255,255,0.2)";
-    ctx.fillRect(200, 840, w - 400, 12);
-    ctx.fillStyle = `hsl(${progress * 120}, 100%, 60%)`;
-    ctx.fillRect(200, 840, (w - 400) * progress, 12);
-
-    // Opções
-    options.forEach((opt, i) => {
-      const y = 900 + i * 120;
-      const isCorrect = isRevealing && opt.code === currentCountry?.code;
-      const isWrong = isRevealing && opt.code !== currentCountry?.code;
-      
-      ctx.fillStyle = isCorrect 
-        ? "rgba(0,255,200,0.15)" 
-        : isWrong
-        ? "rgba(255,80,80,0.1)"
-        : "rgba(255,255,255,0.08)";
-      
-      if (ctx.roundRect) {
-        ctx.roundRect(120, y, w - 240, 100, 15);
-      } else {
-        ctx.rect(120, y, w - 240, 100);
-      }
-      ctx.fill();
-      
-      ctx.strokeStyle = isCorrect 
-        ? "#00FFCC" 
-        : isWrong
-        ? "#FF5555"
-        : "rgba(255,255,255,0.3)";
-      ctx.lineWidth = isCorrect ? 4 : 2;
-      ctx.stroke();
-      
-      ctx.fillStyle = isCorrect 
-        ? "#00FFCC" 
-        : isWrong
-        ? "#FF8888"
-        : "#ffffff";
-      ctx.font = "600 34px 'Poppins', sans-serif";
-      ctx.fillText(opt.name.toUpperCase(), w / 2, y + 60);
-    });
-
-    // Status e tempo de gravação
-    ctx.font = "24px 'Poppins', sans-serif";
-    ctx.fillStyle = status.includes("❌") 
-      ? "#FF4444" 
-      : status.includes("✅") 
-      ? "#00FFAA" 
-      : status.includes("🔴")
-      ? "#FF5555"
-      : "#00CCFF";
-    
-    ctx.fillText(status, w / 2, h - 60);
-    
-    // Tempo de gravação
-    if (recordingTime > 0) {
-      ctx.font = "20px 'Poppins', sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
+  // --- GRAVAÇÃO (Mantido) ---
+  const startRecording = () => {
+    try {
+      const stream = canvasRef.current.captureStream(30)
+      const audioStream = destinationRef.current.stream
+      const mixed = new MediaStream([...stream.getTracks(), ...audioStream.getAudioTracks()])
      
+      const recorder = new MediaRecorder(mixed, {
+        mimeType: 'video/webm;codecs=vp9',
+        videoBitsPerSecond: 6000000
+      })
+
+
+      recordedChunksRef.current = []
+      recorder.ondataavailable = e => { if (e.data.size > 0) recordedChunksRef.current.push(e.data) }
+      recorder.onstop = saveVideo
+      recorder.start()
+      mediaRecorderRef.current = recorder
+      isRecordingRef.current = true
+      setStatus("🔴 GRAVANDO...")
+    } catch (e) {
+      console.error(e)
+      setStatus("❌ ERRO GRAVAÇÃO")
+    }
+  }
+
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecordingRef.current) {
+      mediaRecorderRef.current.stop()
+      isRecordingRef.current = false
+      stopSound(bgm)
+      stopSound(tick)
+      if(bgVideoRef.current) bgVideoRef.current.pause()
+      setStatus("💾 PROCESSANDO...")
+    }
+  }
+
+
+  const saveVideo = () => {
+    const blob = new Blob(recordedChunksRef.current, { type: "video/webm" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `quiz_${selectedTheme.id}_${Date.now()}.webm`
+    a.click()
+    setStatus("✅ PRONTO!")
+    setTimeout(() => {
+      setStage("idle")
+      setStatus("")
+    }, 3000)
+  }
+
+
+  // --- CANVAS RENDER (AQUI ESTÁ A MÁGICA - ATUALIZADO) ---
+  const drawTextStroke = (ctx, text, x, y, size, color = "#FFF", strokeColor = "#000", lineWidth = 8) => {
+    ctx.font = `900 ${size}px 'Arial Black', 'Verdana', sans-serif`
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle"
+    ctx.lineJoin = "round"
+    ctx.miterLimit = 2
+    ctx.strokeStyle = strokeColor
+    ctx.lineWidth = lineWidth
+    ctx.strokeText(text, x, y)
+    ctx.fillStyle = color
+    ctx.fillText(text, x, y)
+  }
+const drawScene = (ctx) => {
+    const w = CANVAS_W
+    const h = CANVAS_H
+    const time = Date.now() * 0.001
+
+
+    // 1. FUNDO C/ PARTÍCULAS
+    const g = ctx.createLinearGradient(0, 0, w, h)
+    g.addColorStop(0, "#1a0033")
+    g.addColorStop(1, "#0d001a")
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, w, h)
+
+
+    if (bgVideoRef.current && bgVideoRef.current.readyState >= 2) {
+        ctx.globalAlpha = 0.4
+        ctx.drawImage(bgVideoRef.current, 0, 0, w, h)
+        ctx.globalAlpha = 1.0
     }
 
-    // Efeito de revelação
-    if (isRevealing && currentCountry) {
-      ctx.fillStyle = "rgba(0,255,200,0.15)";
-      ctx.font = "bold 44px 'Poppins', sans-serif";
-      ctx.fillText(`✓ ${currentCountry.name.toUpperCase()}`, w / 2, 780);
-    }
-  };
 
-  // Polyfill para roundRect
+    // Grid Cyberpunk
+    ctx.strokeStyle = "rgba(255,255,255,0.05)"
+    ctx.lineWidth = 1
+    const gridY = (time * 50) % 100
+    for(let i=0; i<w; i+=100) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,h); ctx.stroke(); }
+
+
+    // Atualiza e desenha partículas
+    particlesRef.current.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if(p.x < 0) p.x = w; if(p.x > w) p.x = 0;
+        if(p.y < 0) p.y = h; if(p.y > h) p.y = 0;
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(time + p.x)) * 0.5})`
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill()
+    })
+
+
+    // 2. Cabeçalho
+    const titleText = selectedTheme.title
+    ctx.shadowColor = "#00ffff"; ctx.shadowBlur = 15;
+    drawTextStroke(ctx, titleText, w/2, 100, 55, "#FFF", "#000", 12)
+    ctx.shadowBlur = 0;
+
+
+    // Status da Rodada
+    let statusText = `NÍVEL ${round}/${TOTAL_ROUNDS}`
+    let statusColor = "#FFD700"
+    if (selectedTheme.id === 'mix') {
+        const diff = getDifficultyByRound(round)
+        statusText = diff === 'easy' ? 'FÁCIL 🟢' : diff === 'medium' ? 'MÉDIO 🟡' : 'IMPOSSÍVEL 🔴'
+        statusColor = diff === 'easy' ? '#00FF88' : diff === 'medium' ? '#FFD700' : '#FF0055'
+    }
+    drawTextStroke(ctx, statusText, w/2, 170, 35, statusColor)
+
+
+    // 3. Placar
+    const scoreY = 230
+    const dotGap = 60
+    for(let i=0; i<TOTAL_ROUNDS; i++) {
+        const x = w/2 - ((TOTAL_ROUNDS-1)*dotGap)/2 + i*dotGap
+        const isActive = i < scoreBoard.length
+        ctx.beginPath()
+        ctx.arc(x, scoreY, 15, 0, Math.PI*2)
+        ctx.fillStyle = isActive ? "#00FF88" : "rgba(255,255,255,0.2)"
+        ctx.fill()
+        if(i === round - 1) {
+            ctx.strokeStyle = "#FFF"; ctx.lineWidth = 4; ctx.stroke()
+        }
+    }
+
+
+    // 4. BANDEIRA COM LASER SCANNER
+    const boxY = 300
+    const boxH = 520
+    const boxW = 900
+    const boxX = (w - boxW)/2
+
+
+    ctx.save()
+ 
+    // Máscara da caixa
+    ctx.beginPath(); ctx.roundRect(boxX, boxY, boxW, boxH, 40); ctx.clip()
+    ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(boxX, boxY, boxW, boxH)
+
+
+    if (flagImage) {
+        // Cálculo do progresso do scan (0 a 1)
+        const progress = isRevealing ? 1 : (1 - (timer / QUIZ_DURATION))
+        const scanHeight = boxH * progress
+
+
+        const img = flagImage
+        const scale = Math.min((boxW)/img.width, (boxH)/img.height) // Fit contain inside box
+        // Ou use Math.max para cover (preencher tudo)
+        const scaleCover = Math.max(boxW/img.width, boxH/img.height)
+       
+        const dw = img.width * scaleCover
+        const dh = img.height * scaleCover
+        const dx = boxX + (boxW - dw)/2
+        const dy = boxY + (boxH - dh)/2
+
+
+        // A. Desenha versão escura/cinza (fundo)
+        ctx.filter = "grayscale(100%) brightness(25%) blur(2px)"
+        ctx.drawImage(img, dx, dy, dw, dh)
+        ctx.filter = "none"
+
+
+        // B. Desenha versão colorida (revelada)
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(boxX, boxY, boxW, scanHeight)
+        ctx.clip()
+        ctx.drawImage(img, dx, dy, dw, dh)
+        ctx.restore()
+
+
+        // C. Desenha o Laser
+        if (!isRevealing) {
+            const laserY = boxY + scanHeight
+            ctx.shadowColor = "#00FF00"; ctx.shadowBlur = 30;
+            ctx.strokeStyle = "#00FF88"; ctx.lineWidth = 8;
+            ctx.beginPath(); ctx.moveTo(boxX, laserY); ctx.lineTo(boxX+boxW, laserY); ctx.stroke();
+            ctx.strokeStyle = "#FFF"; ctx.lineWidth = 2; ctx.stroke(); // Core branco
+            ctx.shadowBlur = 0;
+        }
+    }
+    // Borda da caixa
+    ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = 4; ctx.strokeRect(boxX, boxY, boxW, boxH)
+    ctx.restore()
+
+
+    // 5. Timer (Barra abaixo da imagem)
+    const timerY = boxY + boxH + 40
+    const barW = 800
+    const tProgress = timer / QUIZ_DURATION
+    ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.beginPath(); ctx.roundRect((w-barW)/2, timerY, barW, 15, 8); ctx.fill()
+    ctx.fillStyle = timer <= 3 ? "#FF0055" : "#00FF88"
+    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.roundRect((w-barW)/2, timerY, barW * tProgress, 15, 8); ctx.fill()
+    ctx.shadowBlur = 0;
+
+
+    // 6. Opções
+    const startOptY = timerY + 80
+    const optH = 110
+    const optGap = 30
+
+
+    options.forEach((opt, i) => {
+        const y = startOptY + i * (optH + optGap)
+        const isCorrect = isRevealing && opt.code === currentCountry?.code
+        const isWrong = isRevealing && opt.code !== currentCountry?.code
+       
+        let bgColor = "rgba(255,255,255,0.05)"
+        let strokeColor = "rgba(255,255,255,0.1)"
+        let textColor = "#FFF"
+        let scale = 1
+
+
+        if(!isRevealing) scale = 1 + Math.sin(time * 5 + i) * 0.003 // Pulsação leve
+
+
+        if (isCorrect) {
+            bgColor = "#00C853"; strokeColor = "#00E676"; scale = 1.05
+        } else if (isWrong) {
+            bgColor = "rgba(255,0,0,0.2)"; strokeColor = "#D50000"; textColor = "#AAA"
+        }
+
+
+        const optW = 900
+        ctx.save()
+        ctx.translate(w/2, y + optH/2)
+        ctx.scale(scale, scale)
+       
+        ctx.fillStyle = bgColor
+        ctx.beginPath(); ctx.roundRect(-optW/2, -optH/2, optW, optH, 20); ctx.fill()
+        ctx.strokeStyle = strokeColor; ctx.lineWidth = 4; ctx.stroke()
+       
+        const fontSize = opt.name.length > 22 ? 30 : 40
+        drawTextStroke(ctx, opt.name.toUpperCase(), 0, 0, fontSize, textColor, "rgba(0,0,0,0.8)", 6)
+       
+        if (isCorrect) {
+             ctx.shadowColor = "gold"; ctx.shadowBlur = 20;
+             drawTextStroke(ctx, "✓", optW/2 - 60, 0, 50, "#FFD700")
+             ctx.shadowBlur = 0;
+        }
+
+
+        ctx.restore()
+    })
+
+
+    // 7. Marca D'água
+    if(MY_USER) {
+        ctx.font = "bold 24px 'Arial', sans-serif"
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)"
+        ctx.textAlign = "center"
+        ctx.fillText(MY_USER, w/2, h - 40)
+    }
+  }
+
+
+  // Loop
   useEffect(() => {
-    if (!CanvasRenderingContext2D.prototype.roundRect) {
-      CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-        if (width < 2 * radius) radius = width / 2;
-        if (height < 2 * radius) radius = height / 2;
-        this.beginPath();
-        this.moveTo(x + radius, y);
-        this.arcTo(x + width, y, x + width, y + height, radius);
-        this.arcTo(x + width, y + height, x, y + height, radius);
-        this.arcTo(x, y + height, x, y, radius);
-        this.arcTo(x, y, x + width, y, radius);
-        this.closePath();
-        return this;
-      };
+    if (stage !== "running") return
+    const ctx = canvasRef.current?.getContext("2d")
+    const loop = (t) => {
+        if (t - lastTimeRef.current >= frameInterval) {
+            drawScene(ctx)
+            lastTimeRef.current = t
+        }
+        rafRef.current = requestAnimationFrame(loop)
     }
-  }, []);
+    rafRef.current = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [stage, timer, isRevealing, flagImage, options, scoreBoard, selectedTheme])
 
-  useEffect(() => {
-    if (stage !== "running") return;
-    
-    const ctx = canvasRef.current?.getContext("2d");
-    if (!ctx) return;
 
-    const loop = (currentTime) => {
-      if (currentTime - lastTimeRef.current >= frameInterval) {
-        drawScene(ctx);
-        lastTimeRef.current = currentTime;
-      }
-      rafRef.current = requestAnimationFrame(loop);
-    };
-
-    rafRef.current = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [stage, flagImage, options, timer, status, isRevealing, round, currentCountry, recordingTime]);
-
-  // ---------------------
-  // Render
-  // ---------------------
   return (
-    <div
-      style={{
-        height: "100vh",
-        background: "linear-gradient(135deg, #0a0010, #220022)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#fff",
-        fontFamily: "'Poppins', sans-serif",
-        padding: 20,
-        overflow: 'hidden'
-      }}
-    >
-      {stage === "idle" ? (
-        <div style={{ textAlign: "center", maxWidth: 520 }}>
-          <h1
-            style={{
-              fontSize: 48,
-              marginBottom: 10,
-              background: "linear-gradient(90deg, #FF00FF, #00FFFF)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            🌍 QUIZ DE BANDEIRAS
-          </h1>
-          <p style={{ fontSize: 18, opacity: 0.8, marginBottom: 10 }}>
-            Vídeo de ~{TOTAL_VIDEO_TIME} segundos
-          </p>
-          <p style={{ fontSize: 14, opacity: 0.6, marginBottom: 30 }}>
-            {TOTAL_ROUNDS} rodadas • Tempo limite: 60s
-          </p>
-          <button
-            onClick={startQuiz}
-            style={{
-              background: "linear-gradient(90deg, #FF00FF, #00FFFF)",
-              border: "none",
-              padding: "16px 40px",
-              fontSize: 20,
-              borderRadius: 50,
-              cursor: "pointer",
-              color: "#fff",
-              fontWeight: "600",
-              boxShadow: "0 0 30px rgba(255, 0, 255, 0.5)",
-            }}
-          >
-            🚀 INICIAR GRAVAÇÃO
-          </button>
-          <p style={{ fontSize: 14, opacity: 0.6, marginTop: 20 }}>
-            O vídeo será baixado automaticamente ao final
-          </p>
-        </div>
-      ) : (
-        <>
-          <canvas
-            ref={canvasRef}
-            width={CANVAS_W}
-            height={CANVAS_H}
-            style={{
-              width: "100%",
-              maxWidth: 400,
-              height: "auto",
-              borderRadius: 20,
-              boxShadow: "0 0 60px rgba(255, 0, 255, 0.4)",
-            }}
-          />
-         
-        </>
-      )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4 font-sans">
+        {stage === 'idle' ? (
+            <div className="w-full max-w-lg bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl p-6">
+                <h1 className="text-3xl font-black text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                    GERADOR VIRAL 🚀
+                </h1>
+               
+                <p className="text-gray-400 text-sm mb-3 font-bold uppercase tracking-wider">Escolha o Tema:</p>
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                    {THEMES.map((theme) => (
+                    <button
+                        key={theme.id}
+                        onClick={() => setSelectedTheme(theme)}
+                        className={`
+                        p-3 rounded-xl font-bold text-sm transition-all duration-200 border
+                        ${selectedTheme.id === theme.id
+                            ? `bg-gradient-to-br ${theme.color} border-white text-white shadow-lg transform scale-105`
+                            : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'}
+                        `}
+                    >
+                        {theme.label}
+                    </button>
+                    ))}
+                </div>
+
+
+                <div className="bg-gray-800 p-4 rounded-lg mb-6 text-sm text-gray-300">
+                    <p>💡 <b>Dica:</b> O vídeo terá efeito de "Laser Scan" e partículas!</p>
+                </div>
+
+
+                <button
+                    onClick={startQuiz}
+                    className={`w-full py-4 rounded-xl text-white font-black text-lg uppercase tracking-wide shadow-lg transition-all active:scale-95 bg-gradient-to-r ${selectedTheme.color}`}
+                >
+                    GRAVAR VÍDEO AGORA 🎬
+                </button>
+            </div>
+        ) : (
+            <div className="relative w-full max-w-[400px]">
+                <canvas
+                    ref={canvasRef}
+                    width={CANVAS_W}
+                    height={CANVAS_H}
+                    className="w-full h-auto rounded-lg shadow-2xl border border-gray-800"
+                />
+                <div className="absolute bottom-4 left-0 w-full text-center">
+                    <span className="bg-red-600 text-white font-bold px-4 py-2 rounded-full text-xs shadow-lg animate-pulse">
+                        {status}
+                    </span>
+                </div>
+            </div>
+        )}
     </div>
-  );
+  )
 }
+

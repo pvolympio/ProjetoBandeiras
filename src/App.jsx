@@ -8,6 +8,7 @@ import QuizNomePais from './components/quizzes/QuizNomePais'
 import QuizPopulacao from './components/quizzes/QuizPopulacao'
 import QuizRelampago from './components/quizzes/QuizRelampago'
 import QuizTikTok from "./components/quizzes/QuizTikTok";
+import QuizYouTube from './components/quizzes/QuizYoutube'
 import { Routes, Route } from 'react-router-dom'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/quiz/populacao" element={<QuizPopulacao />} />
         <Route path="/quiz/relampago" element={<QuizRelampago />} />
         <Route path="/quiz-tiktok" element={<QuizTikTok />} />
+        <Route path="/quiz-youtube" element={<QuizYouTube />} />
         
       </Routes>
     </>

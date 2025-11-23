@@ -34,6 +34,13 @@ function QuizSelector() {
       icon: <Video className="w-8 h-8 text-amber-400" />,
       gradient: "from-purple-500 to-indigo-600",
     },
+    {
+      title: "Modo Youtube",
+      description: "Versão horizontal para gravar vídeos 🎥",
+      path: "/quiz-youtube",
+      icon: <Video className="w-8 h-8 text-amber-400" />,
+      gradient: "from-purple-500 to-indigo-600",
+    },
   ];
 
   return (
