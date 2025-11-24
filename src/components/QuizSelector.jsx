@@ -27,7 +27,7 @@ function QuizSelector() {
       icon: <Flag className="w-8 h-8 text-amber-400" />,
       gradient: "from-rose-500 to-pink-600",
     },
-    {
+    /*{
       title: "Modo TikTok",
       description: "Versão vertical para gravar vídeos 🎥",
       path: "/quiz-tiktok",
@@ -40,7 +40,7 @@ function QuizSelector() {
       path: "/quiz-youtube",
       icon: <Video className="w-8 h-8 text-amber-400" />,
       gradient: "from-purple-500 to-indigo-600",
-    },
+    },*/
   ];
 
   return (

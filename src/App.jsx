@@ -7,8 +7,8 @@ import QuizContinente from './components/quizzes/QuizContinente'
 import QuizNomePais from './components/quizzes/QuizNomePais'
 import QuizPopulacao from './components/quizzes/QuizPopulacao'
 import QuizRelampago from './components/quizzes/QuizRelampago'
-import QuizTikTok from "./components/quizzes/QuizTikTok";
-import QuizYouTube from './components/quizzes/QuizYoutube'
+//import QuizTikTok from "./components/quizzes/QuizTikTok";
+//import QuizYouTube from './components/quizzes/QuizYoutube'
 import { Routes, Route } from 'react-router-dom'
 
 function App() {
