@@ -8,28 +8,38 @@ import QuizNomePais from './components/quizzes/QuizNomePais'
 import QuizPopulacao from './components/quizzes/QuizPopulacao'
 import QuizRelampago from './components/quizzes/QuizRelampago'
 import Curiosidades from './components/Curiosidades'
-//import QuizTikTok from "./components/quizzes/QuizTikTok"
-//import QuizYouTube from './components/quizzes/QuizYoutube' 
+// Importe os novos componentes:
+import PoliticaPrivacidade from './components/PoliticaPrivacidade' //
+import SobreNos from './components/SobreNos' //
+import Footer from './components/Footer' //
+
 import { Routes, Route } from 'react-router-dom'
 
 function App() {
   return (
-    <>
+    <div className="flex flex-col min-h-screen"> {/* Adicionei essa div para o footer ficar sempre embaixo */}
       <HeaderPrincipal />
-      <Routes>
-        <Route path="/" element={<FuncaoBandeiras />} />
-        <Route path="/quiz" element={<QuizSelector />} />
-        <Route path="/quiz/bandeira" element={<QuizBandeira />} />
-        <Route path="/quiz/capital" element={<QuizCapital />} />
-        <Route path="/quiz/continente" element={<QuizContinente />} />
-        <Route path="/quiz/nome-pais" element={<QuizNomePais />} />
-        <Route path="/quiz/populacao" element={<QuizPopulacao />} />
-        <Route path="/quiz/relampago" element={<QuizRelampago />} />
-        {/*<Route path="/quiz-tiktok" element={<QuizTikTok />} />} {/* <-- BLOQUEADO */}
-        {/*<Route path="/quiz-youtube" element={<QuizYouTube />} /> } {/* <-- BLOQUEADO */}
-        <Route path="/curiosidades" element={<Curiosidades />} />
-      </Routes>
-    </>
+      
+      <div className="flex-grow"> {/* O conteúdo cresce para empurrar o footer */}
+        <Routes>
+          <Route path="/" element={<FuncaoBandeiras />} />
+          <Route path="/quiz" element={<QuizSelector />} />
+          <Route path="/quiz/bandeira" element={<QuizBandeira />} />
+          <Route path="/quiz/capital" element={<QuizCapital />} />
+          <Route path="/quiz/continente" element={<QuizContinente />} />
+          <Route path="/quiz/nome-pais" element={<QuizNomePais />} />
+          <Route path="/quiz/populacao" element={<QuizPopulacao />} />
+          <Route path="/quiz/relampago" element={<QuizRelampago />} />
+          <Route path="/curiosidades" element={<Curiosidades />} />
+          
+          {/* Novas Rotas */}
+          <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
+          <Route path="/sobre" element={<SobreNos />} />
+        </Routes>
+      </div>
+
+      <Footer /> {/* Footer global */}
+    </div>
   )
 }
 
