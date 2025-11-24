@@ -8,8 +8,8 @@ import QuizNomePais from './components/quizzes/QuizNomePais'
 import QuizPopulacao from './components/quizzes/QuizPopulacao'
 import QuizRelampago from './components/quizzes/QuizRelampago'
 import Curiosidades from './components/Curiosidades'
-// import QuizTikTok from "./components/quizzes/QuizTikTok";  <-- COMENTADO
-// import QuizYouTube from './components/quizzes/QuizYoutube' <-- COMENTADO
+//import QuizTikTok from "./components/quizzes/QuizTikTok"
+//import QuizYouTube from './components/quizzes/QuizYoutube' 
 import { Routes, Route } from 'react-router-dom'
 
 function App() {
@@ -25,8 +25,8 @@ function App() {
         <Route path="/quiz/nome-pais" element={<QuizNomePais />} />
         <Route path="/quiz/populacao" element={<QuizPopulacao />} />
         <Route path="/quiz/relampago" element={<QuizRelampago />} />
-        {/* <Route path="/quiz-tiktok" element={<QuizTikTok />} /> */} {/* <-- BLOQUEADO */}
-        {/* <Route path="/quiz-youtube" element={<QuizYouTube />} /> */} {/* <-- BLOQUEADO */}
+        {/*<Route path="/quiz-tiktok" element={<QuizTikTok />} />} {/* <-- BLOQUEADO */}
+        {/*<Route path="/quiz-youtube" element={<QuizYouTube />} /> } {/* <-- BLOQUEADO */}
         <Route path="/curiosidades" element={<Curiosidades />} />
       </Routes>
     </>

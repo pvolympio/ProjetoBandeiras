@@ -13,7 +13,7 @@ const QUIZ_DURATION = 8
 
 
 // Coloque seu @ aqui para aparecer no rodapé (Opcional)
-const MY_USER = "@MisterCreative02"
+const MY_USER = "@SeuQuizViral"
 
 
 const SOUNDS = {
