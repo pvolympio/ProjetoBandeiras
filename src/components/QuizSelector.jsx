@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Flag, MapPin, Globe, Video } from "lucide-react";
+import { Flag, MapPin, Globe, Video, Zap, Users, Map } from "lucide-react";
 
 function QuizSelector() {
   const navigate = useNavigate();
@@ -27,13 +27,34 @@ function QuizSelector() {
       icon: <Flag className="w-8 h-8 text-amber-400" />,
       gradient: "from-rose-500 to-pink-600",
     },
-    /*{
+    {
+      title: "Quiz Relâmpago",
+      description: "60 segundos para acertar o máximo! ⚡",
+      path: "/quiz/relampago",
+      icon: <Zap className="w-8 h-8 text-amber-400" />,
+      gradient: "from-yellow-500 to-orange-600",
+    },
+    {
+      title: "População",
+      description: "Qual país tem mais gente? 👥",
+      path: "/quiz/populacao",
+      icon: <Users className="w-8 h-8 text-amber-400" />,
+      gradient: "from-indigo-500 to-purple-600",
+    },
+    {
+      title: "Continente",
+      description: "Onde fica este país? 🗺️",
+      path: "/quiz/continente",
+      icon: <Map className="w-8 h-8 text-amber-400" />,
+      gradient: "from-teal-500 to-cyan-600",
+    },/*
+    {
       title: "Modo TikTok",
       description: "Versão vertical para gravar vídeos 🎥",
-      path: "/quiz-tiktok",
+      path: "/quiz/tiktok",
       icon: <Video className="w-8 h-8 text-amber-400" />,
       gradient: "from-purple-500 to-indigo-600",
-    },
+    },/*
     {
       title: "Modo Youtube",
       description: "Versão horizontal para gravar vídeos 🎥",

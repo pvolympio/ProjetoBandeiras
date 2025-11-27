@@ -8,9 +8,13 @@ import QuizNomePais from './components/quizzes/QuizNomePais'
 import QuizPopulacao from './components/quizzes/QuizPopulacao'
 import QuizRelampago from './components/quizzes/QuizRelampago'
 import Curiosidades from './components/Curiosidades'
+import QuizTikTok from './components/quizzes/QuizTikTok'
 // Importe os novos componentes:
 import PoliticaPrivacidade from './components/PoliticaPrivacidade' //
+import TermosDeUso from './components/TermosDeUso' //
 import SobreNos from './components/SobreNos' //
+import Contato from './components/Contato' //
+import NotFound from './components/NotFound' //
 import Footer from './components/Footer' //
 
 import { Routes, Route } from 'react-router-dom'
@@ -31,10 +35,13 @@ function App() {
           <Route path="/quiz/populacao" element={<QuizPopulacao />} />
           <Route path="/quiz/relampago" element={<QuizRelampago />} />
           <Route path="/curiosidades" element={<Curiosidades />} />
+          <Route path="/quiz/tiktok" element={<QuizTikTok />} />
           
           {/* Novas Rotas */}
           <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
-          <Route path="/sobre" element={<SobreNos />} />
+          <Route path="/termos-de-uso" element={<TermosDeUso />} />
+          <Route path="/contato" element={<Contato />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
 

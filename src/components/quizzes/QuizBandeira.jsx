@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { allCountries } from "../../data/countryLoader";
 import { getSimilarFlags } from "../../utils/colorUtils";
-import { Shuffle, CheckCircle, XCircle } from "lucide-react";
+import { Shuffle, CheckCircle, XCircle, Share2 } from "lucide-react";
+import { useSound } from "../../hooks/useSound";
+import { useQuestionPool } from "../../hooks/useQuestionPool";
 
 function QuizBandeira() {
   const [currentCountry, setCurrentCountry] = useState(null);
@@ -12,10 +14,12 @@ function QuizBandeira() {
   const [difficulty, setDifficulty] = useState("médio");
   const [loading, setLoading] = useState(true);
 
+  const { getNextCountry } = useQuestionPool();
+
   const loadNewQuestion = async () => {
     setLoading(true);
     setFeedback("");
-    const random = allCountries[Math.floor(Math.random() * allCountries.length)];
+    const random = getNextCountry();
     setCurrentCountry(random);
 
     // número de opções erradas varia com a dificuldade
@@ -27,13 +31,17 @@ function QuizBandeira() {
     setLoading(false);
   };
 
+  const playSound = useSound();
+
   const handleSelect = (selected) => {
     if (!currentCountry) return;
     if (selected.code === currentCountry.code) {
+      playSound('correct');
       setScore((s) => s + 1);
       setFeedback("Correto! 🎉");
       setTimeout(loadNewQuestion, 1200);
     } else {
+      playSound('wrong');
       setFeedback(`❌ Errado! Era ${currentCountry.name}.`);
     }
   };
@@ -112,12 +120,33 @@ function QuizBandeira() {
           </motion.p>
         )}
 
-        <button
-          onClick={loadNewQuestion}
-          className="mt-6 px-5 py-2 bg-amber-500 text-white rounded-lg font-medium flex items-center gap-2 hover:bg-amber-600 transition-colors"
-        >
-          <Shuffle className="w-5 h-5" /> Próxima
-        </button>
+        <div className="flex gap-4 mt-6">
+          <button
+            onClick={loadNewQuestion}
+            className="px-5 py-2 bg-amber-500 text-white rounded-lg font-medium flex items-center gap-2 hover:bg-amber-600 transition-colors"
+          >
+            <Shuffle className="w-5 h-5" /> Próxima
+          </button>
+          
+          <button
+            onClick={() => {
+              const text = `Acertei ${score} bandeiras no Quiz Bandeiras do Mundo! 🌍\nVocê consegue me superar? Jogue agora: https://bandeirasdomundo.com`;
+              if (navigator.share) {
+                navigator.share({
+                  title: 'Bandeiras do Mundo',
+                  text: text,
+                  url: 'https://bandeirasdomundo.com',
+                }).catch(console.error);
+              } else {
+                navigator.clipboard.writeText(text);
+                alert("Link copiado para a área de transferência!");
+              }
+            }}
+            className="px-5 py-2 bg-green-500 text-white rounded-lg font-medium flex items-center gap-2 hover:bg-green-600 transition-colors"
+          >
+            <Share2 className="w-5 h-5" /> Compartilhar
+          </button>
+        </div>
       </div>
     </main>
   );

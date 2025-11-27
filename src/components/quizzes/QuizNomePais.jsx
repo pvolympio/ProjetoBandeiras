@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { allCountries } from '../../data/countryLoader';
 import { normalizeString } from '../../utils/normalizeString';
-import { CheckCircle, SkipForward, Eye } from 'lucide-react';
+import { CheckCircle, SkipForward, Eye, Share2 } from 'lucide-react';
+import { useSound } from '../../hooks/useSound';
+import { useQuestionPool } from '../../hooks/useQuestionPool';
 
 function QuizNomePais() {
   const [currentCountry, setCurrentCountry] = useState(null);
@@ -10,12 +12,14 @@ function QuizNomePais() {
   const [feedback, setFeedback] = useState('');
   const [score, setScore] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+  const playSound = useSound();
 
   const inputRef = useRef(null);
 
+  const { getNextCountry } = useQuestionPool();
+  
   const selectNewCountry = () => {
-    const randomIndex = Math.floor(Math.random() * allCountries.length);
-    const newCountry = allCountries[randomIndex];
+    const newCountry = getNextCountry();
     setCurrentCountry(newCountry);
     setInputValue('');
     setFeedback('');
@@ -35,10 +39,12 @@ function QuizNomePais() {
     const respostaJogador = normalizeString(inputValue);
 
     if (respostaCorreta === respostaJogador) {
+      playSound('correct');
       setScore((prev) => prev + 1);
       setFeedback('Correto! 🎉 Próxima bandeira...');
       setTimeout(() => selectNewCountry(), 1500);
     } else {
+      playSound('wrong');
       setFeedback('Incorreto 😕 Tente novamente!');
       const input = document.getElementById('quiz-input');
       input?.classList.add('animate-shake');
@@ -166,6 +172,25 @@ function QuizNomePais() {
             <SkipForward className="w-4 h-4" /> Pular
           </button>
         </div>
+
+        <button
+          onClick={() => {
+            const text = `Já acertei ${score} países no Quiz Bandeiras do Mundo! 🌍\nQuantos você conhece? Jogue agora: https://bandeirasdomundo.com`;
+            if (navigator.share) {
+              navigator.share({
+                title: 'Bandeiras do Mundo',
+                text: text,
+                url: 'https://bandeirasdomundo.com',
+              }).catch(console.error);
+            } else {
+              navigator.clipboard.writeText(text);
+              alert("Link copiado!");
+            }
+          }}
+          className="w-full mt-3 p-2 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition flex items-center justify-center gap-2"
+        >
+          <Share2 className="w-4 h-4" /> Desafiar Amigos
+        </button>
 
         {/* Feedback e resposta */}
         <AnimatePresence>

@@ -20,7 +20,9 @@ function Footer() {
         <nav className="flex flex-wrap justify-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-400">
           <Link to="/" className="hover:text-amber-500 transition-colors">Início</Link>
           <Link to="/sobre" className="hover:text-amber-500 transition-colors">Sobre Nós</Link>
+          <Link to="/contato" className="hover:text-amber-500 transition-colors">Contato</Link>
           <Link to="/politica-privacidade" className="hover:text-amber-500 transition-colors">Política de Privacidade</Link>
+          <Link to="/termos-de-uso" className="hover:text-amber-500 transition-colors">Termos de Uso</Link>
         </nav>
 
         <div className="text-xs text-gray-400 dark:text-gray-500">

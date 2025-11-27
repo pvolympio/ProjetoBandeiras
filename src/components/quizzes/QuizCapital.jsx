@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { allCountries } from '../../data/countryLoader';
 import { normalizeString } from '../../utils/normalizeString';
-import { CheckCircle, SkipForward, Eye } from 'lucide-react';
+import { CheckCircle, SkipForward, Eye, Share2 } from 'lucide-react';
+import { useSound } from '../../hooks/useSound';
+import { useQuestionPool } from '../../hooks/useQuestionPool';
 
 function QuizCapital() {
   const [currentCountry, setCurrentCountry] = useState(null);
@@ -10,14 +12,21 @@ function QuizCapital() {
   const [feedback, setFeedback] = useState('');
   const [score, setScore] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+  const playSound = useSound();
 
   const inputRef = useRef(null);
 
   // Seleciona um país aleatório que tenha capital válida
+  const { getNextCountry } = useQuestionPool();
+
+  // Seleciona um país aleatório que tenha capital válida
   const selectNewCountry = () => {
-    const countriesWithCapital = allCountries.filter(c => c.capital);
-    const randomIndex = Math.floor(Math.random() * countriesWithCapital.length);
-    const newCountry = countriesWithCapital[randomIndex];
+    let newCountry = getNextCountry();
+    // Garante que tenha capital (embora todos no meu data tenham, é bom prevenir)
+    while (!newCountry.capital) {
+        newCountry = getNextCountry();
+    }
+    
     setCurrentCountry(newCountry);
     setInputValue('');
     setFeedback('');
@@ -37,10 +46,12 @@ function QuizCapital() {
     const respostaJogador = normalizeString(inputValue);
 
     if (respostaCorreta === respostaJogador) {
+      playSound('correct');
       setScore((prev) => prev + 1);
       setFeedback('Correto! 🎉 Próxima bandeira...');
       setTimeout(() => selectNewCountry(), 1500);
     } else {
+      playSound('wrong');
       setFeedback('Incorreto 😕 Tente novamente!');
       const input = document.getElementById('quiz-input');
       input?.classList.add('animate-shake');
@@ -168,6 +179,25 @@ function QuizCapital() {
             <SkipForward className="w-4 h-4" /> Pular
           </button>
         </div>
+        
+        <button
+          onClick={() => {
+            const text = `Já acertei ${score} capitais no Quiz Bandeiras do Mundo! 🏙️\nQuantas você consegue? Jogue agora: https://bandeirasdomundo.com`;
+            if (navigator.share) {
+              navigator.share({
+                title: 'Bandeiras do Mundo',
+                text: text,
+                url: 'https://bandeirasdomundo.com',
+              }).catch(console.error);
+            } else {
+              navigator.clipboard.writeText(text);
+              alert("Link copiado!");
+            }
+          }}
+          className="w-full mt-3 p-2 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition flex items-center justify-center gap-2"
+        >
+          <Share2 className="w-4 h-4" /> Desafiar Amigos
+        </button>
 
         {/* Feedback e resposta */}
         <AnimatePresence>
