@@ -18,6 +18,7 @@ import NotFound from './components/NotFound' //
 import Footer from './components/Footer' //
 import Perfil from './components/Perfil' //
 import PaisDetalhes from './components/PaisDetalhes' //
+import CookieConsent from './components/CookieConsent' //
 
 import { Routes, Route } from 'react-router-dom'
 
@@ -50,6 +51,7 @@ function App() {
       </div>
 
       <Footer /> {/* Footer global */}
+      <CookieConsent />
     </div>
   )
 }

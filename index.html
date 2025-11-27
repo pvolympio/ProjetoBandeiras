@@ -18,9 +18,44 @@
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8826089907867789"
      crossorigin="anonymous"></script>
+
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://bandeirasdomundo.com/#website",
+            "url": "https://bandeirasdomundo.com/",
+            "name": "Bandeiras do Mundo",
+            "description": "Teste seus conhecimentos de geografia com nossos quizzes de bandeiras, capitais e países.",
+            "inLanguage": "pt-BR"
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://bandeirasdomundo.com/#organization",
+            "name": "Bandeiras do Mundo",
+            "url": "https://bandeirasdomundo.com/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://bandeirasdomundo.com/logo.png",
+              "width": 512,
+              "height": 512
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="font-family: sans-serif; text-align: center; padding: 50px; color: #333;">
+        <h1>Bandeiras do Mundo</h1>
+        <p>Carregando o melhor quiz de geografia...</p>
+        <noscript>Você precisa habilitar o JavaScript para jogar este quiz.</noscript>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

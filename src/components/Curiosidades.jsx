@@ -9,7 +9,8 @@ import {
   AlertTriangle, 
   Maximize2, 
   Minimize2,
-  HelpCircle 
+  HelpCircle,
+  Sun
 } from 'lucide-react';
 
 function Curiosidades() {
@@ -84,6 +85,41 @@ function Curiosidades() {
       text: "Moçambique 🇲🇿 é o único país cuja bandeira apresenta a imagem de um fuzil moderno (AK-47), simbolizando a defesa e a vigilância.",
       icon: <AlertTriangle className="w-6 h-6 text-green-600" />,
       color: "border-green-600"
+    },
+    {
+      id: 7,
+      title: "O Sol de Maio",
+      text: "As bandeiras da Argentina 🇦🇷 e do Uruguai 🇺🇾 compartilham o mesmo símbolo: o Sol de Maio, que representa a Revolução de Maio de 1810.",
+      icon: <Sun className="w-6 h-6 text-yellow-500" />,
+      color: "border-yellow-500"
+    },
+    {
+      id: 8,
+      title: "Dragão do Trovão",
+      text: "A bandeira do Butão 🇧🇹 apresenta um dragão branco segurando joias, representando a pureza e a riqueza do país, conhecido como a 'Terra do Dragão do Trovão'.",
+      icon: <Trophy className="w-6 h-6 text-orange-500" />,
+      color: "border-orange-500"
+    },
+    {
+      id: 9,
+      title: "Duas Faces",
+      text: "A bandeira do Paraguai 🇵🇾 é única por ter dois lados diferentes: o brasão nacional na frente e o selo do tesouro no verso.",
+      icon: <Maximize2 className="w-6 h-6 text-red-600" />,
+      color: "border-red-600"
+    },
+    {
+      id: 10,
+      title: "Guerra e Paz",
+      text: "A bandeira das Filipinas 🇵🇭 é a única que muda dependendo do estado do país: se a faixa vermelha estiver em cima, indica estado de guerra; azul em cima, paz.",
+      icon: <AlertTriangle className="w-6 h-6 text-blue-600" />,
+      color: "border-blue-600"
+    },
+    {
+      id: 11,
+      title: "Bandeira Mapa",
+      text: "A bandeira do Chipre 🇨🇾 e a do Kosovo 🇽🇰 são as únicas bandeiras nacionais que apresentam o mapa do próprio país em seu design.",
+      icon: <MapIcon className="w-6 h-6 text-amber-600" />,
+      color: "border-amber-600"
     }
   ];
 

@@ -15,6 +15,9 @@ function Footer() {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Explore, jogue e aprenda geografia.
           </p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-4 max-w-xs">
+            Este é um projeto educacional independente. Todas as informações são verificadas para garantir precisão.
+          </p>
         </div>
 
         <nav className="flex flex-wrap justify-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-400">
