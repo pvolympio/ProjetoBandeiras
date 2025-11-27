@@ -14,7 +14,8 @@ function SobreNos() {
             <h2 className="text-2xl font-bold">Nossa Missão</h2>
           </div>
           <p className="mb-6 text-lg leading-relaxed text-gray-600 dark:text-gray-300">
-            O <strong>Bandeiras do Mundo</strong> nasceu de uma paixão genuína pela vexilologia (o estudo das bandeiras) e pela geografia global. Acreditamos que conhecer as bandeiras não é apenas um jogo de memória, mas uma porta de entrada para entender a cultura, a história e a identidade de cada nação.
+            O <strong>Bandeiras do Mundo</strong> nasceu de uma paixão genuína pela vexilologia (o estudo das bandeiras) e pela geografia global. Acreditamos que conhecer as bandeiras não é apenas um jogo de memória, mas uma porta de entrada para entender a cultura, a história e a identidade de cada nação. 
+            Nosso objetivo é criar a maior e mais acessível plataforma de aprendizado geográfico em língua portuguesa, oferecendo dados precisos e atualizados sobre todos os países reconhecidos.
           </p>
 
           <hr className="my-8 border-gray-200 dark:border-gray-700" />

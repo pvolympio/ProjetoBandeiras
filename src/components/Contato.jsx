@@ -22,7 +22,7 @@ function Contato() {
               contato@bandeirasdomundo.com
             </a>
             <p className="text-xs text-gray-500 mt-2 italic">
-              (Substitua este email pelo seu email real de contato)
+              Responderemos em até 24 horas úteis.
             </p>
           </div>
 

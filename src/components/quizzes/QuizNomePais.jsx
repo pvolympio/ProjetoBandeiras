@@ -5,6 +5,8 @@ import { normalizeString } from '../../utils/normalizeString';
 import { CheckCircle, SkipForward, Eye, Share2 } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
 import { useQuestionPool } from '../../hooks/useQuestionPool';
+import { useHighScore } from '../../hooks/useHighScore';
+import { useMastery } from '../../hooks/useMastery';
 
 function QuizNomePais() {
   const [currentCountry, setCurrentCountry] = useState(null);
@@ -15,8 +17,10 @@ function QuizNomePais() {
   const playSound = useSound();
 
   const inputRef = useRef(null);
-
+  
   const { getNextCountry } = useQuestionPool();
+  const { highScore, updateHighScore } = useHighScore('nome-pais');
+  const { incrementMastery } = useMastery();
   
   const selectNewCountry = () => {
     const newCountry = getNextCountry();
@@ -40,7 +44,10 @@ function QuizNomePais() {
 
     if (respostaCorreta === respostaJogador) {
       playSound('correct');
-      setScore((prev) => prev + 1);
+      const newScore = score + 1;
+      setScore(newScore);
+      updateHighScore(newScore);
+      incrementMastery(currentCountry.code);
       setFeedback('Correto! 🎉 Próxima bandeira...');
       setTimeout(() => selectNewCountry(), 1500);
     } else {
@@ -87,16 +94,19 @@ function QuizNomePais() {
       <div className="w-full max-w-md text-center">
         {/* Placar e progresso */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Pontuação: {score}</h2>
+          <div>
+             <p className="text-sm text-gray-500 dark:text-gray-400 text-left">Recorde: <span className="text-amber-500 font-bold">{highScore}</span></p>
+             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Pontuação: {score}</h2>
+          </div>
           <div className="h-2 flex-1 ml-4 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
-              className="bg-green-500 h-full transition-all"
+              className="bg-blue-500 h-full transition-all"
               style={{ width: `${(score % 10) * 10}%` }}
             ></div>
           </div>
         </div>
 
-        {/* Bandeira */}
+        {/* Bandeira com animação */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentCountry.code}
@@ -108,7 +118,7 @@ function QuizNomePais() {
           >
             <img
               src={`/flags/${currentCountry.code}.svg`}
-              alt={`Bandeira de ${currentCountry.name}`}
+              alt="Bandeira"
               className="w-48 h-auto object-contain border border-gray-300 dark:border-gray-700 rounded-md"
             />
           </motion.div>
@@ -122,13 +132,13 @@ function QuizNomePais() {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Digite o nome do país..."
+            placeholder="Que país é este?"
             disabled={feedback.startsWith('Correto')}
             className="
-              w-full p-3 rounded-lg border-2 border-amber-500
+              w-full p-3 rounded-lg border-2 border-blue-500
               text-gray-800 dark:text-gray-100
               bg-gray-50 dark:bg-gray-800
-              focus:outline-none focus:ring-2 focus:ring-amber-400
+              focus:outline-none focus:ring-2 focus:ring-blue-400
               placeholder-gray-500 dark:placeholder-gray-400
               shadow-sm mb-4 transition
             "
@@ -138,7 +148,7 @@ function QuizNomePais() {
             disabled={feedback.startsWith('Correto')}
             className="
               w-full flex justify-center items-center gap-2 p-3 rounded-lg
-              bg-green-600 text-white font-bold hover:bg-green-700 transition-colors
+              bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors
               disabled:bg-gray-400
             "
           >
@@ -172,7 +182,7 @@ function QuizNomePais() {
             <SkipForward className="w-4 h-4" /> Pular
           </button>
         </div>
-
+        
         <button
           onClick={() => {
             const text = `Já acertei ${score} países no Quiz Bandeiras do Mundo! 🌍\nQuantos você conhece? Jogue agora: https://bandeirasdomundo.com`;

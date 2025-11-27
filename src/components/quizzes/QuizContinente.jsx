@@ -4,6 +4,7 @@ import { allCountries } from '../../data/countryLoader';
 import { Map, Share2, Globe } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
 import { useQuestionPool } from '../../hooks/useQuestionPool';
+import { useHighScore } from '../../hooks/useHighScore';
 
 const CONTINENTS = ["África", "América do Norte", "América do Sul", "Ásia", "Europa", "Oceania"];
 
@@ -13,6 +14,7 @@ function QuizContinente() {
   const [feedback, setFeedback] = useState("");
   const playSound = useSound();
   const { getNextCountry } = useQuestionPool();
+  const { highScore, updateHighScore } = useHighScore('continente');
 
   const loadNewQuestion = () => {
     const random = getNextCountry();
@@ -29,12 +31,15 @@ function QuizContinente() {
 
     if (selectedContinent === currentCountry.continent) {
       playSound('correct');
-      setScore(s => s + 1);
+      const newScore = score + 1;
+      setScore(newScore);
+      updateHighScore(newScore);
       setFeedback("Correto! 🎉");
       setTimeout(loadNewQuestion, 1500);
     } else {
       playSound('wrong');
       setFeedback(`❌ Errado! Fica na ${currentCountry.continent}.`);
+      setScore(0); // Reset score on wrong answer
     }
   };
 
@@ -44,6 +49,10 @@ function QuizContinente() {
     <main className="min-h-screen flex flex-col items-center p-6 bg-white dark:bg-gray-900 transition-colors">
       <div className="max-w-2xl w-full text-center">
         <div className="flex justify-between items-center mb-6">
+          <div className="text-left">
+             <p className="text-sm text-gray-500 dark:text-gray-400">Recorde</p>
+             <p className="text-xl font-bold text-amber-500">{highScore}</p>
+          </div>
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">Pontuação: {score}</h2>
           <Globe className="w-8 h-8 text-amber-500" />
         </div>

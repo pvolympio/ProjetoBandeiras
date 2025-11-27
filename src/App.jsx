@@ -16,6 +16,8 @@ import SobreNos from './components/SobreNos' //
 import Contato from './components/Contato' //
 import NotFound from './components/NotFound' //
 import Footer from './components/Footer' //
+import Perfil from './components/Perfil' //
+import PaisDetalhes from './components/PaisDetalhes' //
 
 import { Routes, Route } from 'react-router-dom'
 
@@ -41,6 +43,8 @@ function App() {
           <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
           <Route path="/termos-de-uso" element={<TermosDeUso />} />
           <Route path="/contato" element={<Contato />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/pais/:code" element={<PaisDetalhes />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

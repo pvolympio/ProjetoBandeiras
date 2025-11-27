@@ -4,6 +4,7 @@ import { allCountries } from '../../data/countryLoader';
 import { ArrowUp, ArrowDown, Users, Share2 } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
 import { useQuestionPool } from '../../hooks/useQuestionPool';
+import { useHighScore } from '../../hooks/useHighScore';
 
 function QuizPopulacao() {
   const [countryA, setCountryA] = useState(null);
@@ -13,6 +14,7 @@ function QuizPopulacao() {
   const [reveal, setReveal] = useState(false);
   const playSound = useSound();
   const { getNextCountry } = useQuestionPool();
+  const { highScore, updateHighScore } = useHighScore('populacao');
 
   // Formatar número
   const formatPop = (num) => new Intl.NumberFormat('pt-BR').format(num);
@@ -58,7 +60,9 @@ function QuizPopulacao() {
 
     if (isCorrect) {
       playSound('correct');
-      setScore(s => s + 1);
+      const newScore = score + 1;
+      setScore(newScore);
+      updateHighScore(newScore);
       setTimeout(nextRound, 2000);
     } else {
       playSound('wrong');
@@ -72,7 +76,10 @@ function QuizPopulacao() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-6 text-center">
         <h1 className="text-4xl font-bold mb-4 text-red-500">Fim de Jogo!</h1>
-        <p className="text-xl mb-6">Você acertou {score} seguidas.</p>
+        <p className="text-xl mb-2">Você acertou {score} seguidas.</p>
+        <p className="text-amber-500 font-bold mb-6 text-lg">
+            Recorde: {highScore}
+        </p>
         
         <div className="flex flex-col gap-4 w-full max-w-xs">
           <button onClick={startGame} className="py-3 bg-amber-500 rounded-lg font-bold hover:bg-amber-600 transition">

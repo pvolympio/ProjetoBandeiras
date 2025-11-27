@@ -1,12 +1,33 @@
-import React, { useState } from "react";
-import { Sun, Moon, Menu, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sun, Moon, Menu, X, Volume2, VolumeX, Download } from "lucide-react";
 import logoBandeiras from "/src/assets/logo.png";
 import { useDarkMode } from "../hooks/useDarkMode";
+import { useSoundSettings } from "../contexts/SoundContext";
 import { Link } from "react-router-dom";
 
 function HeaderPrincipal() {
   const [, toggleTheme] = useDarkMode();
+  const { isMuted, toggleSound } = useSoundSettings();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   return (
     <header className="bg-white dark:bg-gray-900 shadow-md transition-colors duration-300">
@@ -44,6 +65,12 @@ function HeaderPrincipal() {
             >
               Curiosidades
             </Link>
+            <Link
+              to="/perfil"
+              className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors font-bold text-amber-600 dark:text-amber-400"
+            >
+              Meu Perfil
+            </Link>
           </nav>
 
           {/* Botões: modo escuro + menu mobile */}
@@ -55,6 +82,29 @@ function HeaderPrincipal() {
             >
               <Sun className="w-5 h-5 text-gray-700 dark:hidden" />
               <Moon className="w-5 h-5 text-gray-300 hidden dark:block" />
+            </button>
+
+            {deferredPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-600 text-white hover:bg-green-700 transition text-sm font-medium shadow-sm animate-pulse"
+                title="Instalar App"
+              >
+                <Download className="w-4 h-4" />
+                Instalar App
+              </button>
+            )}
+
+            <button
+              onClick={toggleSound}
+              className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+              title={isMuted ? "Ativar som" : "Desativar som"}
+            >
+              {isMuted ? (
+                <VolumeX className="w-5 h-5 text-red-500" />
+              ) : (
+                <Volume2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+              )}
             </button>
 
             {/* Botão hambúrguer */}
@@ -93,6 +143,25 @@ function HeaderPrincipal() {
             >
               Curiosidades
             </Link>
+            <Link
+              to="/perfil"
+              onClick={() => setMenuOpen(false)}
+              className="text-amber-600 dark:text-amber-400 font-bold hover:text-green-500 transition"
+            >
+              Meu Perfil
+            </Link>
+            {deferredPrompt && (
+              <button
+                onClick={() => {
+                  handleInstallClick();
+                  setMenuOpen(false);
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition w-full justify-center"
+              >
+                <Download className="w-5 h-5" />
+                Instalar App
+              </button>
+            )}
           </div>
         </div>
       )}

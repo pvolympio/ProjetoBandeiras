@@ -5,6 +5,8 @@ import { getSimilarFlags } from "../../utils/colorUtils";
 import { Shuffle, CheckCircle, XCircle, Share2 } from "lucide-react";
 import { useSound } from "../../hooks/useSound";
 import { useQuestionPool } from "../../hooks/useQuestionPool";
+import { useHighScore } from "../../hooks/useHighScore";
+import { useMastery } from "../../hooks/useMastery";
 
 function QuizBandeira() {
   const [currentCountry, setCurrentCountry] = useState(null);
@@ -15,6 +17,9 @@ function QuizBandeira() {
   const [loading, setLoading] = useState(true);
 
   const { getNextCountry } = useQuestionPool();
+  const { highScore, updateHighScore } = useHighScore('bandeira');
+  const { incrementMastery } = useMastery();
+  const playSound = useSound();
 
   const loadNewQuestion = async () => {
     setLoading(true);
@@ -31,18 +36,20 @@ function QuizBandeira() {
     setLoading(false);
   };
 
-  const playSound = useSound();
-
   const handleSelect = (selected) => {
     if (!currentCountry) return;
     if (selected.code === currentCountry.code) {
       playSound('correct');
-      setScore((s) => s + 1);
+      const newScore = score + 1;
+      setScore(newScore);
+      updateHighScore(newScore);
+      incrementMastery(currentCountry.code); // Track mastery
       setFeedback("Correto! 🎉");
       setTimeout(loadNewQuestion, 1200);
     } else {
       playSound('wrong');
       setFeedback(`❌ Errado! Era ${currentCountry.name}.`);
+      setScore(0); // Reset score on wrong answer for infinite mode
     }
   };
 
@@ -67,11 +74,20 @@ function QuizBandeira() {
         </h2>
 
         <div className="flex justify-between items-center mb-4">
-          <p className="text-gray-700 dark:text-gray-300">Pontuação: {score}</p>
+          <div className="text-left">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Recorde</p>
+            <p className="text-xl font-bold text-amber-500">{highScore}</p>
+          </div>
+          
+          <div className="text-right">
+             <p className="text-sm text-gray-500 dark:text-gray-400">Pontuação</p>
+             <p className="text-xl font-bold text-gray-800 dark:text-white">{score}</p>
+          </div>
+
           <select
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
-            className="p-2 rounded-md border-2 border-amber-500 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+            className="ml-4 p-2 rounded-md border-2 border-amber-500 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
           >
             <option value="fácil">Fácil</option>
             <option value="médio">Médio</option>
@@ -120,12 +136,12 @@ function QuizBandeira() {
           </motion.p>
         )}
 
-        <div className="flex gap-4 mt-6">
+        <div className="flex gap-4 mt-6 justify-center">
           <button
             onClick={loadNewQuestion}
             className="px-5 py-2 bg-amber-500 text-white rounded-lg font-medium flex items-center gap-2 hover:bg-amber-600 transition-colors"
           >
-            <Shuffle className="w-5 h-5" /> Próxima
+            <Shuffle className="w-5 h-5" /> Pular
           </button>
           
           <button

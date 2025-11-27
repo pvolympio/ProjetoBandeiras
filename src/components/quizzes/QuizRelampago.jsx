@@ -5,6 +5,7 @@ import { getSimilarFlags } from '../../utils/colorUtils';
 import { Timer, Share2, Play, RotateCcw } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
 import { useQuestionPool } from '../../hooks/useQuestionPool';
+import { useHighScore } from '../../hooks/useHighScore';
 
 function QuizRelampago() {
   const [gameState, setGameState] = useState('menu'); // menu, playing, finished
@@ -14,6 +15,7 @@ function QuizRelampago() {
   const [options, setOptions] = useState([]);
   const playSound = useSound();
   const { getNextCountry, resetPool } = useQuestionPool();
+  const { highScore, updateHighScore } = useHighScore('relampago');
 
   // Iniciar o jogo
   const startGame = () => {
@@ -45,8 +47,9 @@ function QuizRelampago() {
     } else if (timeLeft === 0 && gameState === 'playing') {
       setGameState('finished');
       playSound('wrong'); // Som de fim de jogo
+      updateHighScore(score); // Atualiza recorde ao final do tempo
     }
-  }, [gameState, timeLeft, playSound]);
+  }, [gameState, timeLeft, playSound, score, updateHighScore]);
 
   // Verificar resposta
   const handleSelect = (selected) => {
@@ -72,8 +75,11 @@ function QuizRelampago() {
         >
           <Timer className="w-16 h-16 text-amber-500 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Quiz Relâmpago ⚡</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-gray-600 dark:text-gray-300 mb-2">
             Quantas bandeiras você consegue acertar em 60 segundos?
+          </p>
+          <p className="text-amber-500 font-bold mb-6 text-lg">
+            Recorde Atual: {highScore}
           </p>
           <button
             onClick={startGame}
@@ -97,7 +103,13 @@ function QuizRelampago() {
         >
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Tempo Esgotado! ⏰</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">Sua pontuação final:</p>
-          <div className="text-6xl font-black text-amber-500 mb-8">{score}</div>
+          <div className="text-6xl font-black text-amber-500 mb-4">{score}</div>
+          
+          {score >= highScore && score > 0 && (
+             <div className="mb-6 text-green-500 font-bold text-xl animate-bounce">
+                🏆 Novo Recorde! 🏆
+             </div>
+          )}
           
           <div className="flex flex-col gap-3">
             <button

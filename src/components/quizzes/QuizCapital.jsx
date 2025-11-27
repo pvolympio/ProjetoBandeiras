@@ -5,6 +5,8 @@ import { normalizeString } from '../../utils/normalizeString';
 import { CheckCircle, SkipForward, Eye, Share2 } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
 import { useQuestionPool } from '../../hooks/useQuestionPool';
+import { useHighScore } from '../../hooks/useHighScore';
+import { useMastery } from '../../hooks/useMastery';
 
 function QuizCapital() {
   const [currentCountry, setCurrentCountry] = useState(null);
@@ -15,9 +17,10 @@ function QuizCapital() {
   const playSound = useSound();
 
   const inputRef = useRef(null);
-
-  // Seleciona um país aleatório que tenha capital válida
+  
   const { getNextCountry } = useQuestionPool();
+  const { highScore, updateHighScore } = useHighScore('capital');
+  const { incrementMastery } = useMastery();
 
   // Seleciona um país aleatório que tenha capital válida
   const selectNewCountry = () => {
@@ -47,7 +50,10 @@ function QuizCapital() {
 
     if (respostaCorreta === respostaJogador) {
       playSound('correct');
-      setScore((prev) => prev + 1);
+      const newScore = score + 1;
+      setScore(newScore);
+      updateHighScore(newScore);
+      incrementMastery(currentCountry.code);
       setFeedback('Correto! 🎉 Próxima bandeira...');
       setTimeout(() => selectNewCountry(), 1500);
     } else {
@@ -94,7 +100,10 @@ function QuizCapital() {
       <div className="w-full max-w-md text-center">
         {/* Placar e progresso */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Pontuação: {score}</h2>
+          <div>
+             <p className="text-sm text-gray-500 dark:text-gray-400 text-left">Recorde: <span className="text-amber-500 font-bold">{highScore}</span></p>
+             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Pontuação: {score}</h2>
+          </div>
           <div className="h-2 flex-1 ml-4 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className="bg-blue-500 h-full transition-all"
