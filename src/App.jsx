@@ -19,6 +19,7 @@ import Footer from './components/Footer' //
 import Perfil from './components/Perfil' //
 import PaisDetalhes from './components/PaisDetalhes' //
 import CookieConsent from './components/CookieConsent' //
+import Rankings from './components/Rankings' //
 
 import { Routes, Route } from 'react-router-dom'
 
@@ -44,6 +45,7 @@ function App() {
           <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
           <Route path="/termos-de-uso" element={<TermosDeUso />} />
           <Route path="/contato" element={<Contato />} />
+          <Route path="/rankings" element={<Rankings />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/pais/:code" element={<PaisDetalhes />} />
           <Route path="*" element={<NotFound />} />

@@ -163,6 +163,44 @@ function QuizBandeira() {
             <Share2 className="w-5 h-5" /> Compartilhar
           </button>
         </div>
+
+
+        {/* Seção Educativa para SEO e Valor do Usuário */}
+        <div className="mt-12 max-w-3xl text-left space-y-8 border-t border-gray-100 dark:border-gray-800 pt-8">
+          
+          <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-xl">
+            <h3 className="text-xl font-bold text-amber-700 dark:text-amber-400 mb-3">
+              Por que aprender as bandeiras?
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              As bandeiras são muito mais do que pedaços de tecido colorido; elas são a representação visual da história, cultura e valores de uma nação. 
+              Ao memorizar as bandeiras do mundo, você não apenas exercita sua memória visual, mas também desenvolve uma compreensão mais profunda da geografia global e das relações internacionais.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                <span className="bg-blue-100 dark:bg-blue-900 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm">1</span>
+                Como Jogar
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Observe a bandeira apresentada e escolha o país correto entre as opções. Quanto mais rápido você responder, mais você treina seu cérebro para reconhecimento instantâneo.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                <span className="bg-green-100 dark:bg-green-900 text-green-600 rounded-full w-6 h-6 flex items-center justify-center text-sm">2</span>
+                Sistema de Pontuação
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Mantenha sua sequência de acertos para bater seu recorde pessoal. Cada acerto contribui para o seu nível de domínio daquele país específico.
+              </p>
+            </div>
+          </div>
+
+        </div>
       </div>
     </main>
   );

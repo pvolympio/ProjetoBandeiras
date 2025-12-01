@@ -6,6 +6,7 @@ import { ArrowLeft, MapPin, Users, Globe, Info, Play, Star, Share2 } from 'lucid
 import { allCountries } from '../data/countryLoader';
 import { useMastery } from '../hooks/useMastery';
 import { countryDetails } from '../data/countryDetails';
+import { generateCountryDescription } from '../utils/textGenerator';
 
 function PaisDetalhes() {
   const { code } = useParams();
@@ -51,8 +52,8 @@ function PaisDetalhes() {
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 transition-colors">
       <Helmet>
-        <title>Bandeira do {country.name} - Significado e Curiosidades</title>
-        <meta name="description" content={`Saiba tudo sobre a bandeira do ${country.name}. Capital: ${country.capital}. ${extraData.funFact || ''}`} />
+        <title>Bandeira do {country.name} - Significado, História e Curiosidades</title>
+        <meta name="description" content={generateCountryDescription(country, extraData).intro.substring(0, 160) + "..."} />
       </Helmet>
 
       <div className="max-w-4xl mx-auto">
@@ -89,14 +90,13 @@ function PaisDetalhes() {
             </button>
           </div>
 
-          {/* Informações Principais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 border-t border-gray-100 dark:border-gray-700">
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          {/* Informações Principais (Grid) */}
+          <div className="p-8 border-t border-gray-100 dark:border-gray-700">
+             <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-6">
                 <Info className="w-6 h-6 text-amber-500" /> Informações Básicas
               </h2>
               
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
                     <MapPin className="w-6 h-6" />
@@ -141,40 +141,99 @@ function PaisDetalhes() {
                   </div>
                 )}
               </div>
-            </div>
+          </div>
 
-            {/* Curiosidades e Significado */}
-            <div className="space-y-6">
-              {extraData.meaning && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-xl border border-amber-200 dark:border-amber-800">
-                  <h3 className="text-lg font-bold text-amber-600 dark:text-amber-400 mb-2">Significado da Bandeira</h3>
-                  <p className="text-gray-700 dark:text-gray-300 italic">"{extraData.meaning}"</p>
-                </div>
-              )}
-
-              {extraData.funFact && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
-                  <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-2">Você Sabia?</h3>
-                  <p className="text-gray-700 dark:text-gray-300">{extraData.funFact}</p>
-                </div>
-              )}
-
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2 mt-8">
-                <Play className="w-6 h-6 text-amber-500" /> Pratique
+          {/* Seção de Conteúdo Gerado (SEO + Informação) */}
+          <div className="p-8 border-t border-gray-100 dark:border-gray-700 space-y-6 bg-gray-50/50 dark:bg-gray-800/50">
+            <div className="prose dark:prose-invert max-w-none">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <Globe className="w-6 h-6 text-amber-500" /> Sobre o {country.name}
               </h2>
               
-              <div className="bg-gray-100 dark:bg-gray-700 p-6 rounded-xl">
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  Você já acertou este país <strong>{masteryLevel}</strong> vezes nos quizzes.
-                  {mastered ? " Parabéns, você domina este país! 🌟" : " Continue praticando para ganhar a estrela de domínio!"}
-                </p>
-                <Link 
-                  to="/quiz/bandeira" 
-                  className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-center font-bold rounded-lg transition shadow-md"
-                >
-                  Jogar Quiz de Bandeiras
-                </Link>
+              {(() => {
+                const { intro, details, trivia } = generateCountryDescription(country, extraData);
+                return (
+                  <div className="space-y-4 text-gray-700 dark:text-gray-300 leading-relaxed text-lg">
+                    <p>{intro}</p>
+                    <p>{details}</p>
+                    <p>{trivia}</p>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Curiosidades Específicas */}
+            {(extraData.meaning || extraData.funFact) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                {extraData.meaning && (
+                  <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-xl border border-amber-200 dark:border-amber-800">
+                    <h3 className="text-lg font-bold text-amber-600 dark:text-amber-400 mb-2">Significado da Bandeira</h3>
+                    <p className="text-gray-700 dark:text-gray-300 italic">"{extraData.meaning}"</p>
+                  </div>
+                )}
+
+                {extraData.funFact && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-2">Você Sabia?</h3>
+                    <p className="text-gray-700 dark:text-gray-300">{extraData.funFact}</p>
+                  </div>
+                )}
               </div>
+            )}
+          </div>
+
+          {/* Seção Pratique */}
+          <div className="p-8 border-t border-gray-100 dark:border-gray-700">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-6">
+              <Play className="w-6 h-6 text-amber-500" /> Pratique
+            </h2>
+            
+            <div className="bg-amber-50 dark:bg-amber-900/20 p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+              <div>
+                <h3 className="text-xl font-bold text-amber-700 dark:text-amber-400 mb-2">
+                  Teste seus conhecimentos!
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300">
+                  Você já acertou este país <strong>{masteryLevel}</strong> vezes.
+                  {mastered ? " Você é um mestre! 🌟" : " Continue jogando para dominar."}
+                </p>
+              </div>
+              <Link 
+                to="/quiz/bandeira" 
+                className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                Jogar Agora
+              </Link>
+            </div>
+          </div>
+
+          {/* Seção Veja Também */}
+          <div className="bg-gray-50 dark:bg-gray-900/50 p-8 border-t border-gray-100 dark:border-gray-700">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+              Veja Também ({country.continent})
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {useMemo(() => {
+                const related = allCountries
+                  .filter(c => c.continent === country.continent && c.code !== country.code)
+                  .sort(() => 0.5 - Math.random())
+                  .slice(0, 3);
+
+                return related.map(rel => (
+                  <Link 
+                    key={rel.code} 
+                    to={`/pais/${rel.code}`}
+                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition border border-gray-100 dark:border-gray-700"
+                  >
+                    <img 
+                      src={`/flags/${rel.code}.svg`} 
+                      alt={rel.name} 
+                      className="w-12 h-8 object-cover rounded shadow-sm"
+                    />
+                    <span className="font-medium text-gray-700 dark:text-gray-200">{rel.name}</span>
+                  </Link>
+                ));
+              }, [country])}
             </div>
           </div>
         </div>

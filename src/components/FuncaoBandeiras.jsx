@@ -202,6 +202,30 @@ function FuncaoBandeiras() {
         )}
       </motion.div>
 
+      {/* Seção de Destaque / Curiosidade Aleatória para SEO */}
+      <div className="max-w-4xl mx-auto mt-12 mb-8 p-6 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-800/50">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="p-4 bg-white dark:bg-gray-800 rounded-full shadow-sm">
+            <Star className="w-8 h-8 text-amber-500" />
+          </div>
+          <div className="text-center md:text-left">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+              Você sabia?
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+              Existem 193 países membros das Nações Unidas, mas se contarmos territórios dependentes e estados com reconhecimento limitado, o número de bandeiras para aprender passa de 250! 
+              Cada bandeira conta uma história única sobre a geografia, política e cultura de seu povo.
+            </p>
+            <Link 
+              to="/curiosidades" 
+              className="inline-block mt-4 text-amber-600 dark:text-amber-400 font-medium hover:underline"
+            >
+              Ler mais curiosidades →
+            </Link>
+          </div>
+        </div>
+      </div>
+
 
     </div>
   );

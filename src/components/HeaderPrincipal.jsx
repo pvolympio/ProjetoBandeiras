@@ -66,6 +66,12 @@ function HeaderPrincipal() {
               Curiosidades
             </Link>
             <Link
+              to="/rankings"
+              className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+            >
+              Rankings
+            </Link>
+            <Link
               to="/perfil"
               className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors font-bold text-amber-600 dark:text-amber-400"
             >
@@ -142,6 +148,13 @@ function HeaderPrincipal() {
               className="text-gray-800 dark:text-gray-200 hover:text-green-500 transition"
             >
               Curiosidades
+            </Link>
+            <Link
+              to="/rankings"
+              onClick={() => setMenuOpen(false)}
+              className="text-gray-800 dark:text-gray-200 hover:text-green-500 transition"
+            >
+              Rankings
             </Link>
             <Link
               to="/perfil"
